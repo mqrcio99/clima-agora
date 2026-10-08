@@ -220,6 +220,22 @@ button {
 
 .weather-card {
   padding: 24px;
+  animation: weather-content-in 0.65s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+
+.weather-card--loading {
+  animation: none;
+}
+
+.weather-card--error {
+  min-height: 150px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+}
+
+.forecast {
+  animation: weather-content-in 0.65s 0.12s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
 .weather-card__header,
@@ -370,6 +386,104 @@ button {
   color: var(--muted);
 }
 
+.location-transition {
+  position: relative;
+  display: grid;
+  min-height: clamp(300px, 56vh, 470px);
+  place-content: center;
+  place-items: center;
+  gap: clamp(18px, 4vh, 25px);
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
+  border-radius: 28px;
+  color: var(--text);
+  background: var(--card);
+  box-shadow: 0 20px 60px rgba(25, 45, 70, 0.16);
+  backdrop-filter: blur(18px);
+  animation: transition-in 0.8s ease both;
+}
+
+.location-transition__scene {
+  position: relative;
+  display: grid;
+  width: clamp(150px, 32vw, 210px);
+  height: clamp(125px, 26vw, 170px);
+  place-items: center;
+}
+
+.location-transition__pin {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 60px;
+  height: 60px;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  border-radius: 50% 50% 50% 8px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--card));
+  box-shadow: 0 0 45px color-mix(in srgb, var(--accent) 30%, transparent);
+  font-size: 2rem;
+  transform: rotate(-45deg);
+  animation: pin-breathe 1.8s ease-in-out infinite;
+}
+
+.location-transition__pin::first-letter {
+  transform: rotate(45deg);
+}
+
+.location-transition__pulse {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: location-pulse 2.2s ease-out infinite;
+}
+
+.location-transition__pulse--two {
+  animation-delay: 0.75s;
+}
+
+.location-transition__line {
+  position: absolute;
+  z-index: 1;
+  width: 180px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform-origin: center;
+  animation: line-slide 1.8s ease-in-out infinite;
+}
+
+.location-transition__orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 50%;
+  animation: orbit-spin 7s linear infinite;
+}
+
+.location-transition__orb {
+  position: absolute;
+  top: 50%;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent);
+}
+
+.location-transition p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .weather-card--error,
 .weather-card--loading {
   text-align: center;
@@ -462,6 +576,35 @@ button {
   to { transform: translateX(8%) scaleX(1.05); }
 }
 
+@keyframes transition-in {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes weather-content-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pin-breathe {
+  0%, 100% { transform: rotate(-45deg) scale(1); }
+  50% { transform: rotate(-45deg) scale(1.08); }
+}
+
+@keyframes location-pulse {
+  0% { opacity: .7; transform: scale(.4); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+@keyframes line-slide {
+  0%, 100% { opacity: .2; transform: scaleX(.45); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (min-width: 720px) {
   .app-content {
     padding: 28px 32px 52px;
@@ -502,6 +645,16 @@ button {
 
   .weather-card {
     padding: 20px;
+  }
+
+  .location-transition {
+    min-height: clamp(260px, 48svh, 360px);
+    gap: 18px;
+  }
+
+  .location-transition__scene {
+    width: clamp(140px, 48vw, 180px);
+    height: clamp(120px, 40vw, 150px);
   }
 
   .temperature-row {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { getWeatherCondition } from './weatherCondition.js'
+import { getWeatherCondition } from '../weatherCondition.js'
 
 test('prioriza tempestades', () => {
   assert.equal(getWeatherCondition({ weatherCode: 95, temperature: 30, isDay: 1 }), 'storm')

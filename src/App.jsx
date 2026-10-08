@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CitySearch } from './components/CitySearch'
 import { Forecast } from './components/Forecast'
+import { LocationTransition } from './components/LocationTransition'
 import { WeatherBackground } from './components/WeatherBackground'
 import { WeatherCard } from './components/WeatherCard'
 import { useWeather } from './hooks/useWeather'
@@ -50,7 +51,11 @@ export default function App() {
         </header>
 
         <div className="weather-grid">
-          <WeatherCard data={data} loading={loading} error={error} condition={condition} />
+          {loading && !data ? (
+            <LocationTransition />
+          ) : (
+            <WeatherCard data={data} loading={loading} error={error} condition={condition} />
+          )}
           <Forecast data={data} />
         </div>
 
