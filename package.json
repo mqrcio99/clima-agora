@@ -7,14 +7,36 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js,.jsx --max-warnings=0",
+    "format": "prettier --write .",
+    "check": "npm run lint && prettier --check ."
   },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "last 2 Samsung versions",
+    "iOS >= 13",
+    "Android >= 10",
+    "Chrome >= 69",
+    "Safari >= 13",
+    "Firefox >= 69",
+    "Edge >= 79"
+  ],
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.6.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.9.9",
     "vite": "^8.3.0"
   }
 }

@@ -1,64 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
+import { getCityFromCoordinates, searchCoordinates } from '../services/geocoding.js'
+import { fetchWeather } from '../services/weather.js'
 import { getWeatherCondition } from '../utils/weatherCondition.js'
 
-const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
-const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search'
-const REVERSE_GEOCODING_URL = 'https://api.bigdatacloud.net/data/reverse-geocode-client'
 const REFRESH_INTERVAL = 10 * 60 * 1000
-
-async function fetchJson(url) {
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`Não foi possível consultar a API (${response.status})`)
-  }
-
-  return response.json()
-}
-
-async function getCityFromCoordinates(latitude, longitude) {
-  const params = new URLSearchParams({
-    latitude: String(latitude),
-    longitude: String(longitude),
-    localityLanguage: 'pt',
-  })
-
-  const result = await fetchJson(`${REVERSE_GEOCODING_URL}?${params}`)
-  return result.locality || result.city || result.country || 'Localidade desconhecida'
-}
-
-async function searchCoordinates(city) {
-  const params = new URLSearchParams({
-    name: city,
-    language: 'pt',
-    count: '1',
-  })
-
-  const result = await fetchJson(`${GEOCODING_URL}?${params}`)
-  const place = result.results?.[0]
-
-  if (!place) {
-    throw new Error('Cidade não encontrada')
-  }
-
-  return {
-    latitude: place.latitude,
-    longitude: place.longitude,
-    city: place.name,
-  }
-}
-
-async function fetchWeather(latitude, longitude) {
-  const params = new URLSearchParams({
-    latitude: String(latitude),
-    longitude: String(longitude),
-    current: 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,is_day',
-    daily: 'temperature_2m_max,temperature_2m_min,weather_code',
-    timezone: 'auto',
-  })
-
-  return fetchJson(`${FORECAST_URL}?${params}`)
-}
 
 export function useWeather({ city: requestedCity = '' } = {}) {
   const [data, setData] = useState(null)
@@ -69,7 +14,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
   const loadWeather = useCallback(async (latitude, longitude, cityName) => {
     try {
       const forecast = await fetchWeather(latitude, longitude)
-      const resolvedCity = cityName || await getCityFromCoordinates(latitude, longitude)
+      const resolvedCity = cityName || (await getCityFromCoordinates(latitude, longitude))
       setData({
         ...forecast,
         city: resolvedCity,
@@ -85,7 +30,9 @@ export function useWeather({ city: requestedCity = '' } = {}) {
       )
       setError('')
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Não foi possível carregar o clima')
+      setError(
+        requestError instanceof Error ? requestError.message : 'Não foi possível carregar o clima',
+      )
     } finally {
       setLoading(false)
     }
@@ -108,35 +55,44 @@ export function useWeather({ city: requestedCity = '' } = {}) {
           return
         }
 
-        if (!navigator.geolocation) {
-          throw new Error('A geolocalização não é disponível neste navegador')
+        if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+          throw new Error(
+            'A geolocalização não é compatível com este navegador. Pesquise uma cidade para continuar.',
+          )
         }
 
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            if (!cancelled) {
-              loadWeather(
-                position.coords.latitude,
-                position.coords.longitude,
-              )
-            }
-          },
-          (permissionError) => {
-            if (!cancelled) {
-              setLoading(false)
-              setError(
-                permissionError.code === permissionError.PERMISSION_DENIED
-                  ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
-                  : 'Não foi possível localizar o dispositivo. Pesquise uma cidade.'
-              )
-            }
-          },
-          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-        )
+        try {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              if (!cancelled) {
+                loadWeather(position.coords.latitude, position.coords.longitude)
+              }
+            },
+            permissionError => {
+              if (!cancelled) {
+                setLoading(false)
+                setError(
+                  permissionError.code === permissionError.PERMISSION_DENIED
+                    ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
+                    : 'Não foi possível localizar o dispositivo. Pesquise uma cidade.',
+                )
+              }
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+          )
+        } catch {
+          throw new Error(
+            'A geolocalização não pôde ser iniciada neste navegador. Pesquise uma cidade para continuar.',
+          )
+        }
       } catch (requestError) {
         if (!cancelled) {
           setLoading(false)
-          setError(requestError instanceof Error ? requestError.message : 'Não foi possível iniciar a busca')
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Não foi possível iniciar a busca',
+          )
         }
       }
     }
@@ -147,7 +103,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
         return
       }
       navigator.geolocation?.getCurrentPosition(
-        (position) => loadWeather(position.coords.latitude, position.coords.longitude),
+        position => loadWeather(position.coords.latitude, position.coords.longitude),
         () => setError('Não foi possível atualizar a localização'),
       )
     }, REFRESH_INTERVAL)

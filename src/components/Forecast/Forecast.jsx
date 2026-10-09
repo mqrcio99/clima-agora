@@ -1,4 +1,4 @@
-import { getWeatherCondition } from '../utils/weatherCondition.js'
+import { getWeatherCondition } from '../../utils/weatherCondition.js'
 
 const ICONS = {
   clear: '☀️',

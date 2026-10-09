@@ -1,22 +1,21 @@
-:root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #14213d;
-  background: #dbeafe;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-
 * {
   box-sizing: border-box;
 }
 
 html {
-  min-width: 320px;
+  min-width: var(--breakpoint-mobile);
   min-height: 100%;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  background: var(--color-surface-base);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  min-width: 320px;
+  min-width: var(--breakpoint-mobile);
+  min-height: 100dvh;
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
@@ -31,7 +30,31 @@ button {
   cursor: pointer;
 }
 
-.app-shell {
+@supports not (backdrop-filter: blur(1px)) {
+  .cartao-clima,
+  .previsao,
+  .transicao-localizacao {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+@supports not (inset: 1px) {
+  .app-clima::after {
+    inset: 0;
+  }
+}
+
+@supports not (gap: 8px) {
+  .busca-cidade__linha {
+    display: block;
+  }
+
+  .busca-cidade__linha > * + * {
+    margin-top: 8px;
+  }
+}
+
+.app-clima {
   --bg: linear-gradient(135deg, #f9d65c, #ffffff 55%, #bfe5ff);
   --card: rgba(255, 255, 255, 0.88);
   --text: #10213c;
@@ -39,23 +62,28 @@ button {
   --muted: #52617a;
   position: relative;
   z-index: 1;
+  min-height: 100dvh;
   min-height: 100vh;
+  padding: max(env(safe-area-inset-top), 16px) max(env(safe-area-inset-right), 16px)
+    max(env(safe-area-inset-bottom), 24px) max(env(safe-area-inset-left), 16px);
   color: var(--text);
   background: var(--bg);
-  transition: background 1s ease, color 1s ease;
+  transition:
+    background 1s ease,
+    color 1s ease;
   isolation: isolate;
 }
 
-.app-shell[data-theme="rain"],
-.app-shell[data-theme="storm"] {
+.app-clima[data-theme='rain'],
+.app-clima[data-theme='storm'] {
   --card: rgba(31, 41, 55, 0.88);
   --text: #f5f7fb;
   --accent: #93c5fd;
   --muted: #cbd5e1;
 }
 
-.app-shell[data-theme="cold"],
-.app-shell[data-theme="snow"] {
+.app-clima[data-theme='cold'],
+.app-clima[data-theme='snow'] {
   --bg: linear-gradient(135deg, #a7d8f5, #f8fcff 72%, #cfe6f7);
   --card: rgba(248, 252, 255, 0.9);
   --text: #17314f;
@@ -63,7 +91,7 @@ button {
   --muted: #526a83;
 }
 
-.app-shell[data-theme="cloudy"] {
+.app-clima[data-theme='cloudy'] {
   --bg: linear-gradient(145deg, #b8c9d6, #e5eef5 55%, #9fb9cf);
   --card: rgba(245, 249, 252, 0.9);
   --text: #22364c;
@@ -71,7 +99,7 @@ button {
   --muted: #5c6f82;
 }
 
-.app-shell[data-theme="night"] {
+.app-clima[data-theme='night'] {
   --bg: linear-gradient(145deg, #08152f, #203b73 58%, #172a50);
   --card: rgba(8, 21, 47, 0.88);
   --text: #f8fbff;
@@ -79,19 +107,19 @@ button {
   --muted: #b8c7e8;
 }
 
-.app-shell[data-theme="storm"] {
+.app-clima[data-theme='storm'] {
   --bg: linear-gradient(145deg, #111827, #27364a 56%, #111827);
 }
 
-.app-shell[data-theme="rain"] {
+.app-clima[data-theme='rain'] {
   --bg: linear-gradient(145deg, #61798e, #a9bdc8 52%, #6f8690);
 }
 
-.app-shell[data-theme="clear"] {
+.app-clima[data-theme='clear'] {
   --bg: linear-gradient(135deg, #f9d65c, #ffffff 55%, #bfe5ff);
 }
 
-.app-shell[data-theme="clear"]::before {
+.app-clima[data-theme='clear']::before {
   position: fixed;
   top: 13%;
   right: 12%;
@@ -101,17 +129,17 @@ button {
   border-radius: 50%;
   background: rgba(255, 242, 143, 0.82);
   box-shadow: 0 0 55px rgba(255, 226, 92, 0.7);
-  content: "";
+  content: '';
   animation: sun-pulse 5s ease-in-out infinite;
   pointer-events: none;
 }
 
-.app-shell::after {
+.app-clima::after {
   position: fixed;
   inset: 0;
   z-index: -1;
   background: var(--bg);
-  content: "";
+  content: '';
   transition: background 1s ease;
 }
 
@@ -124,25 +152,114 @@ button {
   pointer-events: none;
 }
 
-.app-content {
+.playground-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  width: min(92vw, 320px);
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #f8fafc;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.3);
+}
+
+.playground-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.playground-panel__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.2);
+  color: #bfdbfe;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.playground-panel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.playground-panel p {
+  margin: 0 0 12px;
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.playground-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.playground-button {
+  padding: 7px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+  color: #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.playground-button.is-active {
+  border-color: rgba(125, 211, 252, 0.8);
+  background: rgba(59, 130, 246, 0.24);
+  color: white;
+}
+
+.playground-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+  font-size: 0.72rem;
+}
+
+.playground-status strong {
+  color: #f8fafc;
+  text-transform: capitalize;
+}
+
+.conteudo-clima {
   position: relative;
   z-index: 1;
   display: grid;
   width: min(100%, 1120px);
-  min-height: 100vh;
+  min-height: calc(100dvh - (env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+  min-height: calc(100vh - (env(safe-area-inset-top) + env(safe-area-inset-bottom)));
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  padding: 0;
 }
 
-.topbar {
+.cabecalho {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
 }
 
-.brand {
+.marca {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -151,7 +268,7 @@ button {
   letter-spacing: 0.02em;
 }
 
-.brand__mark {
+.marca__icone {
   display: grid;
   width: 38px;
   height: 38px;
@@ -162,11 +279,12 @@ button {
   box-shadow: 0 10px 30px rgba(26, 45, 72, 0.12);
 }
 
-.city-search {
+.busca-cidade {
   width: min(100%, 370px);
+  margin-inline: auto;
 }
 
-.city-search label {
+.busca-cidade label {
   display: block;
   margin-bottom: 7px;
   color: var(--muted);
@@ -175,14 +293,16 @@ button {
   text-transform: uppercase;
 }
 
-.city-search__row {
+.busca-cidade__linha {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.city-search input {
+.busca-cidade input {
   min-width: 0;
-  flex: 1;
+  min-height: var(--touch-target);
+  flex: 1 1 220px;
   padding: 11px 14px;
   border: 1px solid color-mix(in srgb, var(--text) 22%, transparent);
   border-radius: 14px;
@@ -192,7 +312,9 @@ button {
   outline: none;
 }
 
-.city-search button {
+.busca-cidade button {
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
   padding: 11px 16px;
   border: 0;
   border-radius: 14px;
@@ -201,45 +323,80 @@ button {
   font-weight: 700;
 }
 
-.weather-grid {
+.app-clima[data-device='tv'] {
+  --text: #f9fbff;
+  --muted: #d5deef;
+}
+
+.app-clima[data-device='tv'] .cartao-clima,
+.app-clima[data-device='tv'] .previsao,
+.app-clima[data-device='tv'] .transicao-localizacao {
+  border-width: 2px;
+  box-shadow: 0 28px 72px rgba(11, 17, 27, 0.5);
+}
+
+.app-clima[data-device='tv'] .cartao-clima h1 {
+  font-size: clamp(2.2rem, 3vw, 3.4rem);
+}
+
+.app-clima[data-device='tv'] .linha-temperatura strong {
+  font-size: clamp(6rem, 10vw, 9rem);
+}
+
+.app-clima[data-device='tv'] .cartao-dia {
+  min-height: 130px;
+}
+
+.grade-clima {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
 
-.weather-card,
-.forecast {
-  border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
-  border-radius: 28px;
-  background: var(--card);
-  box-shadow: 0 20px 60px rgba(25, 45, 70, 0.16);
-  backdrop-filter: blur(18px);
-  transition: background 1s ease, color 1s ease, border-color 1s ease;
+button:focus-visible,
+input:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 70%, white 30%);
+  outline-offset: 3px;
 }
 
-.weather-card {
+.cartao-clima,
+.previsao {
+  border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+  transition:
+    background 1s ease,
+    color 1s ease,
+    border-color 1s ease;
+}
+
+.cartao-clima {
   padding: 24px;
   animation: weather-content-in 0.65s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
-.weather-card--loading {
+.cartao-clima--loading {
   animation: none;
 }
 
-.weather-card--error {
+.cartao-clima--error {
   min-height: 150px;
   display: grid;
   align-content: center;
   justify-items: center;
 }
 
-.forecast {
+.previsao {
   animation: weather-content-in 0.65s 0.12s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
-.weather-card__header,
-.temperature-row {
+.cartao-clima__cabecalho,
+.linha-temperatura {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -255,12 +412,12 @@ button {
   text-transform: uppercase;
 }
 
-.weather-card h1 {
+.cartao-clima h1 {
   margin: 0;
   font-size: clamp(1.7rem, 5vw, 2.6rem);
 }
 
-.condition-icon {
+.icone-condicao {
   display: grid;
   width: 64px;
   height: 64px;
@@ -270,76 +427,80 @@ button {
   font-size: 2rem;
 }
 
-.temperature-row {
+.linha-temperatura {
   align-items: flex-end;
   margin: 28px 0;
 }
 
-.temperature-row strong {
+.linha-temperatura[aria-live='polite'] {
+  min-height: 96px;
+}
+
+.linha-temperatura strong {
   display: block;
   font-size: clamp(5rem, 20vw, 8rem);
   line-height: 0.85;
   letter-spacing: -0.08em;
 }
 
-.temperature-row span {
+.linha-temperatura span {
   display: block;
   margin-top: 12px;
   color: var(--muted);
   font-weight: 700;
 }
 
-.temperature-row p {
+.linha-temperatura p {
   margin: 0 0 5px;
   color: var(--muted);
   font-size: 0.9rem;
 }
 
-.metrics-grid {
+.grade-metricas {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.metrics-grid div {
+.grade-metricas div {
   padding: 14px;
   border-radius: 16px;
   background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
-.metrics-grid span,
-.metrics-grid strong {
+.grade-metricas span,
+.grade-metricas strong {
   display: block;
 }
 
-.metrics-grid span {
+.grade-metricas span {
   margin-bottom: 5px;
   color: var(--muted);
   font-size: 0.8rem;
 }
 
-.forecast {
+.previsao {
   padding: 20px;
 }
 
-.forecast__heading {
+.previsao__cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.forecast__heading h2 {
+.previsao__cabecalho h2 {
   margin: 0;
   font-size: 1rem;
 }
 
-.forecast__heading span {
+.previsao__cabecalho span {
   color: var(--muted);
   font-size: 0.78rem;
 }
 
-.forecast__list {
+.previsao__lista {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(85px, 1fr);
@@ -349,7 +510,7 @@ button {
   scrollbar-width: thin;
 }
 
-.forecast-card {
+.cartao-dia {
   display: grid;
   gap: 7px;
   min-width: 88px;
@@ -359,34 +520,34 @@ button {
   background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
-.forecast-card > span {
+.cartao-dia > span {
   color: var(--muted);
   font-size: 0.72rem;
 }
 
-.forecast-card strong {
+.cartao-dia strong {
   font-size: 1.4rem;
 }
 
-.forecast-card__label {
+.cartao-dia__label {
   min-height: 2.1em;
   color: var(--muted);
   font-size: 0.68rem;
   line-height: 1.15;
 }
 
-.forecast-card div {
+.cartao-dia div {
   display: flex;
   justify-content: center;
   gap: 7px;
   font-size: 0.8rem;
 }
 
-.forecast-card small {
+.cartao-dia small {
   color: var(--muted);
 }
 
-.location-transition {
+.transicao-localizacao {
   position: relative;
   display: grid;
   min-height: clamp(300px, 56vh, 470px);
@@ -404,7 +565,7 @@ button {
   animation: transition-in 0.8s ease both;
 }
 
-.location-transition__scene {
+.transicao-localizacao__cena {
   position: relative;
   display: grid;
   width: clamp(150px, 32vw, 210px);
@@ -412,7 +573,7 @@ button {
   place-items: center;
 }
 
-.location-transition__pin {
+.transicao-localizacao__pino {
   position: relative;
   z-index: 2;
   display: grid;
@@ -429,11 +590,11 @@ button {
   animation: pin-breathe 1.8s ease-in-out infinite;
 }
 
-.location-transition__pin::first-letter {
+.transicao-localizacao__pino::first-letter {
   transform: rotate(45deg);
 }
 
-.location-transition__pulse {
+.transicao-localizacao__pulso {
   position: absolute;
   width: 100px;
   height: 100px;
@@ -443,11 +604,11 @@ button {
   animation: location-pulse 2.2s ease-out infinite;
 }
 
-.location-transition__pulse--two {
+.transicao-localizacao__pulso--two {
   animation-delay: 0.75s;
 }
 
-.location-transition__line {
+.transicao-localizacao__linha {
   position: absolute;
   z-index: 1;
   width: 180px;
@@ -457,7 +618,7 @@ button {
   animation: line-slide 1.8s ease-in-out infinite;
 }
 
-.location-transition__orbit {
+.transicao-localizacao__orbita {
   position: absolute;
   inset: 0;
   border: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent);
@@ -465,7 +626,7 @@ button {
   animation: orbit-spin 7s linear infinite;
 }
 
-.location-transition__orb {
+.transicao-localizacao__orbita-ponto {
   position: absolute;
   top: 50%;
   left: -5px;
@@ -476,7 +637,7 @@ button {
   box-shadow: 0 0 16px var(--accent);
 }
 
-.location-transition p {
+.transicao-localizacao p {
   margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
@@ -484,22 +645,27 @@ button {
   letter-spacing: 0.04em;
 }
 
-.weather-card--error,
-.weather-card--loading {
+.cartao-clima--error,
+.cartao-clima--loading {
   text-align: center;
 }
 
-.weather-card--error p {
+.cartao-clima--error p {
   color: var(--muted);
 }
 
-.weather-card__icon {
+.cartao-clima__icon {
   font-size: 2.3rem;
 }
 
 .skeleton {
   border-radius: 14px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--text) 8%, transparent), color-mix(in srgb, var(--text) 14%, transparent), color-mix(in srgb, var(--text) 8%, transparent));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text) 8%, transparent),
+    color-mix(in srgb, var(--text) 14%, transparent),
+    color-mix(in srgb, var(--text) 8%, transparent)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -520,144 +686,218 @@ button {
   height: 100px;
 }
 
-.app-shell[data-theme="clear"] .sol,
-.app-shell[data-theme="clear"] .sun {
-  animation: sun-pulse 5s ease-in-out infinite;
-}
-
-.app-shell[data-theme="rain"] .weather-background,
-.app-shell[data-theme="storm"] .weather-background {
+.app-clima[data-theme='rain'] .weather-background,
+.app-clima[data-theme='storm'] .weather-background {
   opacity: 0.8;
 }
 
-.app-shell[data-theme="night"]::before {
+.app-clima[data-theme='night']::before {
   position: fixed;
   inset: 0;
   z-index: 0;
-  content: "";
-  background-image: radial-gradient(circle, rgba(255,255,255,.9) 0 1px, transparent 1.5px);
+  content: '';
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 1px, transparent 1.5px);
   background-size: 80px 80px;
   animation: twinkle 4s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-.app-shell[data-theme="cloudy"]::before {
+.app-clima[data-theme='cloudy']::before {
   position: fixed;
   inset: 12% -10% auto;
   z-index: 0;
   height: 180px;
-  content: "";
-  background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,.85) 0 35%, transparent 36%), radial-gradient(ellipse at 70% 55%, rgba(255,255,255,.7) 0 28%, transparent 29%);
+  content: '';
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.85) 0 35%, transparent 36%),
+    radial-gradient(ellipse at 70% 55%, rgba(255, 255, 255, 0.7) 0 28%, transparent 29%);
   filter: blur(16px);
   animation: cloud-drift 18s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-.app-shell[data-theme="storm"]::after {
-  background: radial-gradient(circle at 85% 22%, rgba(252, 211, 77, .22), transparent 25%), var(--bg);
+.app-clima[data-theme='storm']::after {
+  background:
+    radial-gradient(circle at 85% 22%, rgba(252, 211, 77, 0.22), transparent 25%), var(--bg);
 }
 
 @keyframes shimmer {
-  to { background-position: -200% 0; }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes sun-pulse {
-  0%, 100% { transform: scale(1); opacity: .8; }
-  50% { transform: scale(1.08); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
 }
 
 @keyframes twinkle {
-  from { opacity: .35; }
-  to { opacity: .9; }
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.9;
+  }
 }
 
 @keyframes cloud-drift {
-  from { transform: translateX(-8%) scaleX(.95); }
-  to { transform: translateX(8%) scaleX(1.05); }
+  from {
+    transform: translateX(-8%) scaleX(0.95);
+  }
+  to {
+    transform: translateX(8%) scaleX(1.05);
+  }
 }
 
 @keyframes transition-in {
-  from { opacity: 0; transform: translateY(18px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes weather-content-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pin-breathe {
-  0%, 100% { transform: rotate(-45deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.08); }
+  0%,
+  100% {
+    transform: rotate(-45deg) scale(1);
+  }
+  50% {
+    transform: rotate(-45deg) scale(1.08);
+  }
 }
 
 @keyframes location-pulse {
-  0% { opacity: .7; transform: scale(.4); }
-  100% { opacity: 0; transform: scale(1.6); }
+  0% {
+    opacity: 0.7;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
 }
 
 @keyframes line-slide {
-  0%, 100% { opacity: .2; transform: scaleX(.45); }
-  50% { opacity: 1; transform: scaleX(1); }
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scaleX(0.45);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
 
 @keyframes orbit-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-@media (min-width: 720px) {
-  .app-content {
-    padding: 28px 32px 52px;
-  }
-
-  .topbar {
+@media (min-width: 600px) {
+  .cabecalho {
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
     margin-bottom: 52px;
   }
 
-  .weather-grid {
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+  .busca-cidade {
+    width: min(100%, 420px);
+    margin-inline: 0;
   }
 
-  .forecast {
+  .grade-clima {
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  }
+
+  .previsao {
     grid-column: 1 / -1;
   }
 
-  .forecast__list {
+  .previsao__lista {
     grid-auto-flow: row;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
   }
 
-  .forecast-card {
+  .cartao-dia {
     padding: 18px;
   }
 }
 
-@media (max-width: 560px) {
-  .topbar {
+@media (min-width: 1024px) {
+  .app-clima {
+    padding-inline: clamp(16px, 3vw, 32px);
+  }
+
+  .grade-clima {
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr);
+  }
+}
+
+@media (min-width: 1920px) {
+  .app-clima {
+    padding: max(env(safe-area-inset-top), 5%) max(env(safe-area-inset-right), 5%)
+      max(env(safe-area-inset-bottom), 5%) max(env(safe-area-inset-left), 5%);
+  }
+
+  .cartao-clima,
+  .previsao,
+  .transicao-localizacao {
+    border-radius: 32px;
+  }
+}
+
+@media (max-width: 599px) {
+  .cabecalho {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .city-search {
+  .busca-cidade {
     width: 100%;
   }
 
-  .weather-card {
+  .cartao-clima {
     padding: 20px;
   }
 
-  .location-transition {
+  .transicao-localizacao {
     min-height: clamp(260px, 48svh, 360px);
     gap: 18px;
   }
 
-  .location-transition__scene {
+  .transicao-localizacao__cena {
     width: clamp(140px, 48vw, 180px);
     height: clamp(120px, 40vw, 150px);
   }
 
-  .temperature-row {
+  .linha-temperatura {
     align-items: flex-start;
     flex-direction: column;
   }

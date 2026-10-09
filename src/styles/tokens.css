@@ -1,0 +1,35 @@
+:root {
+  --font-family-base:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-body: 16px;
+  --font-size-label: 0.78rem;
+  --font-size-sm: 0.72rem;
+  --font-size-md: 1rem;
+  --font-size-lg: clamp(1.7rem, 5vw, 2.6rem);
+  --font-size-hero: clamp(5rem, 20vw, 8rem);
+  --radius-card: 28px;
+  --radius-pill: 14px;
+  --shadow-card: 0 20px 60px rgba(25, 45, 70, 0.16);
+  --color-surface-base: #dbeafe;
+  --color-text-primary: #14213d;
+  --color-text-secondary: #52617a;
+  --color-white: #ffffff;
+  --color-amber: #f59e0b;
+  --color-blue-strong: #2563eb;
+  --color-border: rgba(20, 33, 61, 0.15);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 600px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-tv: 1920px;
+  --touch-target: 44px;
+}
