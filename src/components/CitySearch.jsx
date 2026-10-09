@@ -31,7 +31,6 @@ export function CitySearch({ onSearch, disabled = false, value = '', onChange })
           onChange={event => updateCity(event.target.value)}
           placeholder="Ex.: São Paulo"
           autoComplete="address-level2"
-          disabled={disabled}
           aria-label="Digite o nome de uma cidade"
         />
         <button

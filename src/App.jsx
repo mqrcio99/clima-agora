@@ -19,6 +19,7 @@ function getDebugCondition() {
 
 export default function App() {
   const [city, setCity] = useState(() => getStoredCity())
+  const [cityInput, setCityInput] = useState(city)
   const [debugCondition] = useState(() => getDebugCondition())
   const [device, setDevice] = useState(() => {
     if (typeof window === 'undefined') {
@@ -38,6 +39,7 @@ export default function App() {
   const handleSearch = nextCity => {
     const normalized = nextCity.trim()
     setCity(normalized)
+    setCityInput(normalized)
     setStoredCity(normalized)
   }
 
@@ -79,7 +81,12 @@ export default function App() {
             </span>
             <span>Clima Agora</span>
           </div>
-          <CitySearch value={city} onChange={setCity} onSearch={handleSearch} disabled={loading} />
+          <CitySearch
+            value={cityInput}
+            onChange={setCityInput}
+            onSearch={handleSearch}
+            disabled={loading}
+          />
         </header>
 
         <div className="grade-clima">
