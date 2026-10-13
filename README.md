@@ -7,7 +7,20 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Open-Meteo](https://img.shields.io/badge/API-Open--Meteo-1E88E5)](https://open-meteo.com)
 
+<<<<<<< HEAD
 🔗 **Demo ao vivo:** [clima-agora-olive.vercel.app](https://clima-agora-olive.vercel.app)
+=======
+- Busca por cidade
+- Geolocalização com fallback seguro
+- Armazenamento do último local consultado
+- Previsão horária dos próximos horários
+- Previsão dos próximos 5 dias
+- Alertas calculados com base na previsão local
+- Tema visual dinâmico por condição meteorológica
+- Modo de TV e telas grandes
+- Playground de desenvolvimento para simular cenários climáticos, incluindo chuva, calor e UV
+- Compatibilidade com navegadores recentes e suporte para navegadores mais antigos
+>>>>>>> 87dc11d (1.1)
 
 ---
 

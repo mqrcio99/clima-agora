@@ -1,3 +1,4 @@
+import { getHourlyForecastOverview, getRainRiskLevel } from '../../utils/hourlyForecast.js'
 import { getWeatherCondition } from '../../utils/weatherCondition.js'
 
 const ICONS = {
@@ -22,10 +23,37 @@ const CONDITION_LABELS = {
 
 export function Forecast({ data }) {
   const days = data?.daily
+  const hourly = getHourlyForecastOverview(data?.hourly ?? {})
+  const rainRisk = getRainRiskLevel(hourly)
+
   if (!days) return null
 
   return (
-    <section className="previsao" aria-label="Previsão dos próximos cinco dias">
+    <section className="previsao" aria-label="Previsão do tempo">
+      {hourly.length > 0 && (
+        <>
+          <div className="previsao__cabecalho">
+            <h2>Próximas horas</h2>
+            <span>{rainRisk}</span>
+          </div>
+          <div className="previsao__lista" aria-label="Previsão das próximas horas">
+            {hourly.map(item => (
+              <article className="cartao-dia" key={item.time}>
+                <span>{item.label}</span>
+                <strong>{ICONS[item.condition] || '☁️'}</strong>
+                <small className="cartao-dia__label">
+                  {CONDITION_LABELS[item.condition] || 'Clima'}
+                </small>
+                <div>
+                  <b>{Math.round(item.temperature)}°</b>
+                  <small>{item.chance}%</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="previsao__cabecalho">
         <h2>Próximos 5 dias</h2>
         <span>Previsão diária</span>

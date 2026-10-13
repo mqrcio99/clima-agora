@@ -1,11 +1,14 @@
 const CONDICOES = [
   { key: 'clear', label: 'Ensolarado' },
   { key: 'rain', label: 'Chuva' },
+  { key: 'storm', label: 'Tempestade' },
+  { key: 'wind', label: 'Vento forte' },
+  { key: 'heat', label: 'Calor extremo' },
+  { key: 'uv', label: 'UV alto' },
   { key: 'cold', label: 'Frio' },
   { key: 'snow', label: 'Neve' },
   { key: 'cloudy', label: 'Nublado' },
   { key: 'night', label: 'Noite' },
-  { key: 'storm', label: 'Tempestade' },
 ]
 
 export default function Playground() {

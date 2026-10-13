@@ -10,7 +10,18 @@ import { getWeatherCondition } from './utils/weatherCondition'
 import './styles/tokens.css'
 import './styles/themes.css'
 
-const DEBUG_CONDITIONS = ['clear', 'rain', 'snow', 'cloudy', 'night', 'storm', 'cold']
+const DEBUG_CONDITIONS = [
+  'clear',
+  'rain',
+  'snow',
+  'cloudy',
+  'night',
+  'storm',
+  'cold',
+  'heat',
+  'wind',
+  'uv',
+]
 
 function getDebugCondition() {
   const params = new URLSearchParams(window.location.search)
