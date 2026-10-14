@@ -938,20 +938,12 @@ a:focus-visible {
     margin-bottom: 52px;
   }
 
-<<<<<<< HEAD
-  .forecast {
-    grid-column: 1 / -1;
-  }
-
-  .forecast__list {
-=======
   .busca-cidade {
     width: min(100%, 420px);
     margin-inline: 0;
   }
 
   .previsao__lista {
->>>>>>> a3060d4b5f26af626ee4c8d1783609c2a85f3322
     grid-auto-flow: row;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
@@ -982,19 +974,16 @@ a:focus-visible {
 }
 
 @media (min-width: 1024px) {
-<<<<<<< HEAD
-  .weather-grid {
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
-  }
-}
-
-@media (max-width: 560px) {
-  .topbar {
-    align-items: flex-start;
-    flex-direction: column;
-=======
   .app-clima {
     padding-inline: clamp(16px, 3vw, 32px);
+  }
+
+  .grade-clima {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+  }
+
+  .previsao {
+    grid-column: 1 / -1;
   }
 }
 
@@ -1002,7 +991,6 @@ a:focus-visible {
   .app-clima {
     padding: max(env(safe-area-inset-top), 5%) max(env(safe-area-inset-right), 5%)
       max(env(safe-area-inset-bottom), 5%) max(env(safe-area-inset-left), 5%);
->>>>>>> a3060d4b5f26af626ee4c8d1783609c2a85f3322
   }
 
   .cartao-clima,
