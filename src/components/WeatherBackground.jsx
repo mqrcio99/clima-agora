@@ -33,13 +33,29 @@ export function WeatherBackground({ condition }) {
 
   useEffect(() => {
     const canvas = canvasRef.current
+
+    if (!canvas) {
+      return undefined
+    }
+
     const context = canvas.getContext('2d')
+
+    if (!context) {
+      return undefined
+    }
+
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let frameId
+    const isTVDevice =
+      window.innerWidth >= 1920 ||
+      /Tizen|webOS|PlayStation|Xbox|Nintendo|Android TV|SMART-TV|TV/i.test(
+        navigator.userAgent || '',
+      )
+    let frameId = 0
     let particles = []
     let width = 0
     let height = 0
     let lastTime = performance.now()
+    let paused = false
 
     const resize = () => {
       const ratio = Math.min(window.devicePixelRatio || 1, 2)
@@ -52,25 +68,31 @@ export function WeatherBackground({ condition }) {
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
 
       const area = width * height
-      const count = Math.min(PARTICLE_LIMIT, Math.max(22, Math.floor(area / 9000)))
+      const baseLimit = isTVDevice ? 12 : 20
+      const count = Math.min(PARTICLE_LIMIT, Math.max(baseLimit, Math.floor(area / 12000)))
       particles = Array.from({ length: count }, (_, index) =>
-        createParticle(width, height, condition === 'snow' || condition === 'cold' ? 'snow' : 'rain', index),
+        createParticle(
+          width,
+          height,
+          condition === 'snow' || condition === 'cold' ? 'snow' : 'rain',
+          index,
+        ),
       )
     }
 
-    const draw = (time) => {
+    const draw = time => {
       const elapsed = Math.min(time - lastTime, 32)
       lastTime = time
       context.clearRect(0, 0, width, height)
 
-      if (reducedMotion) {
+      if (reducedMotion || paused) {
         return
       }
 
       if (condition === 'rain' || condition === 'storm') {
-        particles.forEach((particle) => {
-          particle.y += particle.speed * elapsed / 16
-          particle.x += particle.drift * elapsed / 16
+        particles.forEach(particle => {
+          particle.y += (particle.speed * elapsed) / 16
+          particle.x += (particle.drift * elapsed) / 16
           if (particle.y > height + 30 || particle.x < -30 || particle.x > width + 30) {
             Object.assign(particle, createParticle(width, height, 'rain', particle.index))
           }
@@ -82,9 +104,9 @@ export function WeatherBackground({ condition }) {
           context.stroke()
         })
       } else if (condition === 'snow' || condition === 'cold') {
-        particles.forEach((particle) => {
-          particle.y += particle.speed * elapsed / 16
-          particle.x += Math.sin(time / 650 + particle.index) * particle.drift * elapsed / 16
+        particles.forEach(particle => {
+          particle.y += (particle.speed * elapsed) / 16
+          particle.x += (Math.sin(time / 650 + particle.index) * particle.drift * elapsed) / 16
           particle.rotation += particle.rotationSpeed * elapsed
           if (particle.y > height + 10) {
             particle.y = -10
@@ -104,21 +126,24 @@ export function WeatherBackground({ condition }) {
       frameId = requestAnimationFrame(draw)
     }
 
+    const handleVisibility = () => {
+      paused = document.hidden
+      if (!paused && !reducedMotion) {
+        frameId = requestAnimationFrame(draw)
+      }
+    }
+
     resize()
     window.addEventListener('resize', resize)
+    document.addEventListener('visibilitychange', handleVisibility)
     frameId = requestAnimationFrame(draw)
 
     return () => {
       cancelAnimationFrame(frameId)
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [condition])
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="weather-background"
-      aria-hidden="true"
-    />
-  )
+  return <canvas ref={canvasRef} className="weather-background" aria-hidden="true" />
 }
