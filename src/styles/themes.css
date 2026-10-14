@@ -614,10 +614,6 @@ button {
     margin-bottom: 52px;
   }
 
-  .weather-grid {
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
-  }
-
   .forecast {
     grid-column: 1 / -1;
   }
@@ -630,6 +626,12 @@ button {
 
   .forecast-card {
     padding: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .weather-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
   }
 }
 
