@@ -12,6 +12,8 @@ Aplicativo Android em React Native e Expo, com previsão da Open-Meteo, localiza
 - Fundo animado com redução de movimento e pausa em segundo plano.
 - Playground de condições disponível somente em desenvolvimento.
 
+O plano gratuito atual do EAS inclui até 15 builds Android por mês. Esses builds entram na fila de baixa prioridade, que pode ultrapassar 90 minutos nos horários de pico; o limite de execução por build é 45 minutos. A fila varia e não há prazo garantido.
+
 ## Capturas
 
 O app dispõe de sete temas para inspecionar no playground durante o desenvolvimento: `clear`, `rain`, `cold`, `snow`, `cloudy`, `night` e `storm`. As capturas da interface final e da faixa horária serão adicionadas após validar a experiência em um aparelho Android; a prévia web não substitui capturas de um dispositivo real.
@@ -42,20 +44,26 @@ npx expo-doctor
 
 Após concluir a configuração EAS e adicionar `EXPO_TOKEN` aos segredos do GitHub, o workflow produz o APK de demonstração com o perfil `preview` e o disponibiliza como anexo de um GitHub Release disparado por uma tag `v*`. As notas da release incluem a página do build EAS e o link direto do artefato.
 
-Ainda faltam a identidade final do app, `eas.json` e o vínculo do projeto com uma conta Expo. Antes de usar o workflow, conclua essa configuração e prepare as credenciais do primeiro build. Configure um segredo de repositório chamado `EXPO_TOKEN` com um token de acesso pessoal Expo. Não armazene esse token, keystore ou credenciais no repositório; as credenciais de assinatura devem ser gerenciadas pelo EAS.
-
-Depois de mesclar o workflow na branch padrão, crie e envie uma tag de versão para iniciar a automação:
+O nome, slug, pacote Android, ícone, splash e perfis de build estão configurados. Ainda falta vincular o projeto a uma conta Expo (`projectId`) e preparar as credenciais do primeiro build. Na pasta `mobile/`, autentique e associe o projeto:
 
 ```sh
-git tag v1.0.0
-git push origin v1.0.0
+npx eas-cli@latest login
+npx eas-cli@latest init
 ```
+
+O `init` associa o `projectId` à conta autenticada e atualiza a configuração do app; revise e versione essa alteração. Para o workflow, configure também um segredo de repositório chamado `EXPO_TOKEN` com um token de acesso pessoal Expo. Não armazene esse token, keystore ou credenciais no repositório; as credenciais de assinatura devem ser gerenciadas pelo EAS.
 
 Build manual:
 
 ```sh
-npx eas-cli@latest login
 npx eas-cli@latest build --platform android --profile preview
+```
+
+Depois de mesclar o workflow na branch padrão e configurar `EXPO_TOKEN`, crie e envie uma tag de versão para iniciar a automação:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 O APK final ainda não foi gerado. Portanto, tamanho do arquivo, versão mínima do Android e instruções específicas de instalação serão documentados após o primeiro build concluído. Este APK é uma demonstração; publicação na Play Store requer um AAB e conta de desenvolvedor, fora do escopo atual.
@@ -78,4 +86,4 @@ src/
 
 As justificativas para dependências, arquitetura e trade-offs estão em [`docs/DECISOES.md`](../docs/DECISOES.md); o plano aprovado está em [`docs/PLANO-MOBILE.md`](../docs/PLANO-MOBILE.md).
 
-Próximos passos: configurar a identidade definitiva e os perfis EAS, executar `expo-doctor`, criar o primeiro APK e validar instalação, acessibilidade e desempenho em dispositivos Android reais. Widgets, notificações de chuva, internacionalização e testes ponta a ponta com Maestro permanecem fora do MVP.
+Próximos passos: vincular o projeto à conta Expo, criar o primeiro APK e validar instalação, acessibilidade, capturas dos temas e desempenho em dispositivos Android reais. Widgets, notificações de chuva, internacionalização e testes ponta a ponta com Maestro permanecem fora do MVP.

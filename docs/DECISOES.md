@@ -52,6 +52,9 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 - **EAS Build:** compilar e assinar na nuvem sem exigir Android Studio/JDK para o build de distribuição. O EAS gerencia a keystore; autenticação ficará fora do repositório.
 - **GitHub Actions:** executar lint, tipos, testes e formatação em pushes/PRs; tags `v*` também iniciam um APK `preview` no EAS e uma GitHub Release com o APK, a página do build e o link direto do artefato. A seleção do artefato usa ID filtrado pelo commit da tag para não anexar outro build concorrente. `EXPO_TOKEN` é um segredo configurado pelo mantenedor no GitHub, nunca um arquivo versionado. A credencial Expo e a keystore são pré-requisitos externos, não são geradas nem incluídas pelo workflow.
 - **Release com `preview`:** o perfil interno gera APK instalável para demonstração e partilha; o perfil `production` permanece separado para uma futura distribuição de produção, sem publicar automaticamente um artefato distinto na release GitHub.
+- **Identidade de distribuição:** nome `Clima Agora`, slug `clima-agora`, pacote Android `app.climaagora`, versão `1.0.0` e `versionCode` inicial `1`, conforme as escolhas da entrevista. Os novos PNGs de ícone, ícone adaptativo monocromático e splash usam um símbolo meteorológico simples; os assets originais do template foram preservados. `projectId` não é inventado: será ligado à conta Expo do mantenedor pelo `eas init`.
+- **Permissões de localização:** o config plugin do Expo Location descreve o uso em primeiro plano e desativa explicitamente localização em segundo plano e serviço em primeiro plano. A busca por clima não requer permissão para operar em background.
+- **EAS gratuito (consultado em 19/10/2026):** até 15 builds Android e 15 iOS por mês no plano Free, fila de baixa prioridade e timeout de 45 minutos por build; a Expo informa que filas podem passar de 90 minutos em períodos de pico. A fila é variável, não uma garantia de duração.
 - **Maestro adiado:** os testes unitários e de componentes cobrem a primeira entrega; testes ponta a ponta acrescentam custo de execução e manutenção que não é necessário para iniciar o MVP.
 
 ## Referências consultadas
@@ -67,7 +70,11 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 - [EAS Build em CI](https://docs.expo.dev/build/building-on-ci/)
 - [Distribuição interna EAS](https://docs.expo.dev/build/internal-distribution/)
 - [Configuração eas.json](https://docs.expo.dev/build/eas-json/)
+- [Gerar APK](https://docs.expo.dev/build-reference/apk/)
 - [Referência EAS CLI](https://docs.expo.dev/eas/cli/)
+- [Expo Location SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/location/)
+- [Referência de configuração do Expo](https://docs.expo.dev/versions/v57.0.0/config/app/)
+- [Planos e limites EAS](https://expo.dev/pricing)
 
 Dependências de suporte remanescentes do template serão removidas se não forem utilizadas no app final; toda dependência direta mantida deverá ter motivo listado neste documento.
 

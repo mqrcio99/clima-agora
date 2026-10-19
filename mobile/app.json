@@ -1,21 +1,23 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Clima Agora",
+    "slug": "clima-agora",
+    "description": "Previsão do tempo com localização, busca por cidade e temas dinâmicos.",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "orientation": "default",
+    "icon": "./assets/clima-agora-icon.png",
+    "scheme": "clima-agora",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/clima-agora-icon.png"
     },
     "android": {
+      "package": "app.climaagora",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#0B5164",
+        "foregroundImage": "./assets/clima-agora-symbol.png",
+        "monochromeImage": "./assets/clima-agora-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -28,9 +30,19 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#0B5164",
+          "image": "./assets/clima-agora-symbol.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permitir que o Clima Agora use sua localização enquanto você usa o app.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false,
+          "isIosBackgroundLocationEnabled": false
         }
       ]
     ],
