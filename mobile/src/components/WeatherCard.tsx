@@ -12,6 +12,7 @@ type Props = {
   condition: WeatherCondition;
   error?: string | null;
   forecast?: WeatherForecast | null;
+  stale?: boolean;
   loading: boolean;
   now: Date;
   onRetry?: () => void;
@@ -67,6 +68,7 @@ export function WeatherCard({
   condition,
   error,
   forecast,
+  stale = false,
   loading,
   now,
   onRetry,
@@ -106,6 +108,15 @@ export function WeatherCard({
           {WEATHER_CONDITION_ICONS[condition]}
         </Text>
       </View>
+
+      {stale ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={[styles.refreshStatus, { color: theme.muted }]}
+        >
+          Dados salvos · podem estar desatualizados
+        </Text>
+      ) : null}
 
       {alert ? (
         <View
@@ -287,12 +298,13 @@ const styles = StyleSheet.create({
   alertDescription: {
     fontSize: typography.caption,
     marginTop: spacing.xs,
-    lineHeight: 18,
   },
   temperatureRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
+    rowGap: spacing.sm,
     marginTop: spacing.xxl,
     marginBottom: spacing.md,
   },

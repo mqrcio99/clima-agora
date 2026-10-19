@@ -18,6 +18,7 @@ function isCachedWeather(value: unknown): value is CachedWeather {
   return (
     typeof value.savedAt === 'number' &&
     Number.isFinite(value.savedAt) &&
+    typeof value.city === 'string' &&
     typeof forecast.timezone === 'string' &&
     isRecord(forecast.current) &&
     Array.isArray(forecast.hourly) &&
@@ -64,8 +65,9 @@ export async function getWeatherCache(): Promise<CachedWeather | null> {
 
 export async function setWeatherCache(
   forecast: WeatherForecast,
+  city: string,
   savedAt = Date.now(),
 ): Promise<void> {
-  const value: CachedWeather = { forecast, savedAt };
+  const value: CachedWeather = { forecast, city, savedAt };
   await AsyncStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(value));
 }

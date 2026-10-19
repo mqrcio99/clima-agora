@@ -1,8 +1,10 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { Forecast } from '@/components/Forecast';
+import { CitySearch } from '@/components/CitySearch';
 import { HourlyForecast } from '@/components/HourlyForecast';
 import { WeatherCard } from '@/components/WeatherCard';
+import { Playground } from '@/playground/Playground';
 import type { WeatherForecast } from '@/types/weather';
 import { getWeatherTheme } from '@/styles/themes';
 
@@ -69,6 +71,47 @@ function createForecast(): WeatherForecast {
 }
 
 describe('weather display components', () => {
+  it('submits manual city searches and offers a current-location action', async () => {
+    const onSearch = jest.fn();
+    const onUseCurrentLocation = jest.fn();
+    const { getByLabelText, getByRole } = await render(
+      <CitySearch
+        disabled={false}
+        onSearch={onSearch}
+        onUseCurrentLocation={onUseCurrentLocation}
+        theme={theme}
+        value=""
+      />,
+    );
+
+    await fireEvent.changeText(getByLabelText('Digite o nome de uma cidade'), 'Campinas');
+    await fireEvent.press(getByRole('button', { name: 'Buscar clima da cidade' }));
+    await fireEvent.press(getByRole('button', { name: 'Usar minha localização' }));
+
+    expect(onSearch).toHaveBeenCalledWith('Campinas');
+    expect(onUseCurrentLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the development playground force a condition and toggle animation', async () => {
+    const onConditionChange = jest.fn();
+    const onAnimationToggle = jest.fn();
+    const { getByRole } = await render(
+      <Playground
+        animationsEnabled
+        condition={null}
+        onAnimationToggle={onAnimationToggle}
+        onConditionChange={onConditionChange}
+        theme={theme}
+      />,
+    );
+
+    await fireEvent.press(getByRole('button', { name: 'Neve' }));
+    await fireEvent.press(getByRole('switch', { name: 'Ativar ou desativar animações de fundo' }));
+
+    expect(onConditionChange).toHaveBeenCalledWith('snow');
+    expect(onAnimationToggle).toHaveBeenCalledTimes(1);
+  });
+
   it('shows hourly rain only when its chance reaches twenty percent and reveals details on tap', async () => {
     const forecast = createForecast();
     const { getByRole, getByText, queryByText } = await render(

@@ -45,6 +45,7 @@ export type WeatherForecast = {
 
 export type CachedWeather = {
   forecast: WeatherForecast;
+  city: string;
   savedAt: number;
 };
 

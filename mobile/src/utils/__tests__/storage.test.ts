@@ -76,10 +76,11 @@ describe('weather storage', () => {
   });
 
   it('round-trips a weather cache with its save time', async () => {
-    await setWeatherCache(forecast, 1_792_420_000_000);
+    await setWeatherCache(forecast, 'Campinas', 1_792_420_000_000);
 
     await expect(getWeatherCache()).resolves.toEqual({
       forecast,
+      city: 'Campinas',
       savedAt: 1_792_420_000_000,
     });
   });

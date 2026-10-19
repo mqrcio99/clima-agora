@@ -35,9 +35,11 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 
 - **Open-Meteo:** fonte meteorológica e de busca de cidades sem chave de API. O serviço mobile encapsula a API e mapeia os arrays horários para objetos tipados.
 - **Compatibilidade dos alertas:** a consulta mantém `minutely_15=precipitation` e a precipitação horária do site. Esse dado é mapeado separadamente, sem ampliar o formato público exigido para cada item horário.
+- **Animações de fundo:** até 14 elementos por condição, sem canvas; as animações param quando o app sai de primeiro plano, quando o usuário desativa o playground ou quando o sistema pede movimento reduzido.
 - **BigDataCloud reverse geocoding:** mantido do site para obter nome aproximado a partir das coordenadas, sujeito à disponibilidade do serviço. A previsão não deve depender do sucesso dessa resolução de nome.
 - **Hooks React e estado local:** suficientes para a tela, pesquisa, carregamento e seleção de detalhes da hora; Context só será introduzido se houver estado realmente compartilhado.
 - **Cache AsyncStorage próprio:** guarda a última previsão e seu instante de captura para permitir visualização offline com indicação de dados possivelmente desatualizados; não é uma base de dados geral.
+- **Localidade do cache e atualização:** o cache também guarda o nome exibido. Cidade pesquisada é lembrada; coordenadas do dispositivo são consultadas novamente ao atualizar para não manter uma localização antiga depois de uma viagem.
 - **Nenhum i18n no MVP:** textos em português brasileiro, agrupados para permitir internacionalização futura sem adicionar dependência antes de haver outros idiomas.
 
 ## Desenvolvimento, testes e distribuição
@@ -57,6 +59,7 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 - [Expo Router SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/router/)
 - [Reanimated SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/reanimated/)
 - [Expo Location SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/location/)
+- [Expo LinearGradient SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/linear-gradient/)
 - [AsyncStorage SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/async-storage/)
 - [Jest no Expo](https://docs.expo.dev/develop/unit-testing/)
 - [ESLint e Prettier no Expo](https://docs.expo.dev/guides/using-eslint/)
@@ -65,4 +68,4 @@ Dependências de suporte remanescentes do template serão removidas se não fore
 
 ### Exceção temporária de lint no ambiente Windows
 
-O preset Expo também habilita regras de resolução (`import/namespace`, `import/no-unresolved` e `import/no-duplicates`) que carregam `unrs-resolver`, uma extensão nativa. Neste ambiente Windows o binding não carrega porque falta `vcruntime140_1.dll`; os imports mobile continuam cobertos pelo TypeScript estrito e pelo bundler Metro. Para manter lint executável neste ambiente, somente essas regras de resolução estão desativadas. A exceção deve ser reavaliada caso o runtime C++ seja instalado ou o resolver passe a carregar; nenhuma regra de hooks, TypeScript, React ou Expo foi desativada.
+O preset Expo também habilita regras de resolução (`import/namespace`, `import/no-named-as-default`, `import/no-named-as-default-member`, `import/no-unresolved` e `import/no-duplicates`) que carregam `unrs-resolver`, uma extensão nativa. Neste ambiente Windows o binding não carrega porque falta `vcruntime140_1.dll`; os imports mobile continuam cobertos pelo TypeScript estrito e pelo bundler Metro. Para manter lint executável neste ambiente, somente essas regras de resolução estão desativadas. A exceção deve ser reavaliada caso o runtime C++ seja instalado ou o resolver passe a carregar; nenhuma regra de hooks, TypeScript, React ou Expo foi desativada.

@@ -8,6 +8,8 @@ module.exports = defineConfig([
   {
     rules: {
       'import/namespace': 'off',
+      'import/no-named-as-default': 'off',
+      'import/no-named-as-default-member': 'off',
       'import/no-unresolved': 'off',
       'import/no-duplicates': 'off',
     },

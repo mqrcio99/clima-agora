@@ -169,7 +169,6 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 23,
-    lineHeight: 30,
   },
   temperature: {
     fontSize: typography.body,
@@ -177,7 +176,6 @@ const styles = StyleSheet.create({
   },
   rainChance: {
     fontSize: typography.eyebrow,
-    lineHeight: 16,
     fontWeight: '700',
   },
   rainChancePlaceholder: {
