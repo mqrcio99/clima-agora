@@ -33,6 +33,7 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 ## Dados, rede e comportamento
 
 - **Open-Meteo:** fonte meteorológica e de busca de cidades sem chave de API. O serviço mobile encapsula a API e mapeia os arrays horários para objetos tipados.
+- **Compatibilidade dos alertas:** a consulta mantém `minutely_15=precipitation` e a precipitação horária do site. Esse dado é mapeado separadamente, sem ampliar o formato público exigido para cada item horário.
 - **BigDataCloud reverse geocoding:** mantido do site para obter nome aproximado a partir das coordenadas, sujeito à disponibilidade do serviço. A previsão não deve depender do sucesso dessa resolução de nome.
 - **Hooks React e estado local:** suficientes para a tela, pesquisa, carregamento e seleção de detalhes da hora; Context só será introduzido se houver estado realmente compartilhado.
 - **Cache AsyncStorage próprio:** guarda a última previsão e seu instante de captura para permitir visualização offline com indicação de dados possivelmente desatualizados; não é uma base de dados geral.
