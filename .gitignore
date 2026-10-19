@@ -28,3 +28,7 @@ dist-ssr
 !**/.env.example
 **/credentials.json
 **/*.keystore
+**/*.jks
+**/*.p12
+mobile/.expo/
+mobile/android/

@@ -7,20 +7,9 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Open-Meteo](https://img.shields.io/badge/API-Open--Meteo-1E88E5)](https://open-meteo.com)
 
-<<<<<<< HEAD
 🔗 **Demo ao vivo:** [clima-agora-olive.vercel.app](https://clima-agora-olive.vercel.app)
-=======
-- Busca por cidade
-- Geolocalização com fallback seguro
-- Armazenamento do último local consultado
-- Previsão horária dos próximos horários
-- Previsão dos próximos 5 dias
-- Alertas calculados com base na previsão local
-- Tema visual dinâmico por condição meteorológica
-- Modo de TV e telas grandes
-- Playground de desenvolvimento para simular cenários climáticos, incluindo chuva, calor e UV
-- Compatibilidade com navegadores recentes e suporte para navegadores mais antigos
->>>>>>> 87dc11d (1.1)
+
+🔗 **Versão Android:** [Clima Agora Mobile](mobile/README.md)
 
 ---
 
@@ -38,6 +27,8 @@ O **Clima Agora** consome dados em tempo real da API [Open-Meteo](https://open-m
 - 📺 **Modo TV** para telas grandes
 - 🧪 **Playground de desenvolvimento** para simular cenários climáticos
 - 🌐 **Compatibilidade** com navegadores recentes e suporte a navegadores mais antigos
+- 🌦️ **Previsão horária**, alertas locais e persistência do último local consultado
+- 📱 **Aplicativo Android Expo** em desenvolvimento na pasta [`mobile/`](mobile/)
 
 ## 🛠️ Stack
 
@@ -116,9 +107,10 @@ src/
 
 O projeto foi desenvolvido para apresentação acadêmica e demonstração de boas práticas em responsividade, UX e compatibilidade entre diferentes dispositivos.
 
+O aplicativo mobile é uma implementação separada em React Native/Expo. Consulte [`mobile/README.md`](mobile/README.md) para instruções, estado do APK e decisões específicas da versão Android.
+
 ## 👤 Autor
 
 **Marcio Oliveira**
 
 ---
-

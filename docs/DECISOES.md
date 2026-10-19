@@ -50,7 +50,8 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 - **ESLint com `eslint-config-expo`:** padrões de React Native/Expo e hooks adequados à plataforma.
 - **Prettier e plugin ESLint:** formatação consistente e verificável no mesmo comando de qualidade.
 - **EAS Build:** compilar e assinar na nuvem sem exigir Android Studio/JDK para o build de distribuição. O EAS gerencia a keystore; autenticação ficará fora do repositório.
-- **GitHub Actions:** executar lint, tipos e testes. Build com tag usa credencial EAS fornecida como segredo no GitHub, nunca como arquivo versionado.
+- **GitHub Actions:** executar lint, tipos, testes e formatação em pushes/PRs; tags `v*` também iniciam um APK `preview` no EAS e uma GitHub Release com o APK, a página do build e o link direto do artefato. A seleção do artefato usa ID filtrado pelo commit da tag para não anexar outro build concorrente. `EXPO_TOKEN` é um segredo configurado pelo mantenedor no GitHub, nunca um arquivo versionado. A credencial Expo e a keystore são pré-requisitos externos, não são geradas nem incluídas pelo workflow.
+- **Release com `preview`:** o perfil interno gera APK instalável para demonstração e partilha; o perfil `production` permanece separado para uma futura distribuição de produção, sem publicar automaticamente um artefato distinto na release GitHub.
 - **Maestro adiado:** os testes unitários e de componentes cobrem a primeira entrega; testes ponta a ponta acrescentam custo de execução e manutenção que não é necessário para iniciar o MVP.
 
 ## Referências consultadas
@@ -63,6 +64,10 @@ React e React Native são a base de interface e não são camadas opcionais. Nã
 - [AsyncStorage SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/async-storage/)
 - [Jest no Expo](https://docs.expo.dev/develop/unit-testing/)
 - [ESLint e Prettier no Expo](https://docs.expo.dev/guides/using-eslint/)
+- [EAS Build em CI](https://docs.expo.dev/build/building-on-ci/)
+- [Distribuição interna EAS](https://docs.expo.dev/build/internal-distribution/)
+- [Configuração eas.json](https://docs.expo.dev/build/eas-json/)
+- [Referência EAS CLI](https://docs.expo.dev/eas/cli/)
 
 Dependências de suporte remanescentes do template serão removidas se não forem utilizadas no app final; toda dependência direta mantida deverá ter motivo listado neste documento.
 

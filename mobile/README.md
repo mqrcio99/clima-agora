@@ -1,56 +1,81 @@
-# Welcome to your Expo app 👋
+# Clima Agora Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo Android em React Native e Expo, com previsão da Open-Meteo, localização do dispositivo, busca por cidade, cache offline e temas que acompanham o clima.
 
-## Get started
+## Funcionalidades
 
-1. Install dependencies
+- Clima atual, alertas e previsão para cinco dias.
+- Faixa horária horizontal com encaixe, resumo de chuva/temperatura e detalhes ao tocar em um horário.
+- Localização em primeiro plano e busca manual como alternativa.
+- Cache da última previsão para consulta offline.
+- Sete temas: céu limpo, chuva, frio, neve, nublado, noite e tempestade.
+- Fundo animado com redução de movimento e pausa em segundo plano.
+- Playground de condições disponível somente em desenvolvimento.
 
-   ```bash
-   npm install
-   ```
+## Capturas
 
-2. Start the app
+O app dispõe de sete temas para inspecionar no playground durante o desenvolvimento: `clear`, `rain`, `cold`, `snow`, `cloudy`, `night` e `storm`. As capturas da interface final e da faixa horária serão adicionadas após validar a experiência em um aparelho Android; a prévia web não substitui capturas de um dispositivo real.
 
-   ```bash
-   npx expo start
-   ```
+## Requisitos e execução
 
-In the output, you'll find options to open the app in a
+Instale uma versão LTS do Node.js compatível com o Expo, depois execute:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+cd mobile
+npm ci
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Abra o QR code com Expo Go quando a versão instalada for compatível com este SDK. Também é possível iniciar um emulador Android configurado pelo Android Studio com `npm run android`. O build de distribuição do APK é remoto e não depende do Android Studio.
 
-### Other setup steps
+Qualidade local:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```sh
+npm run check
+npx expo install --check
+npx expo-doctor
+```
 
-## Learn more
+`npm run check` executa ESLint, TypeScript, Jest e verificação de formatação.
 
-To learn more about developing your project with Expo, look at the following resources:
+## APK e distribuição
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Após concluir a configuração EAS e adicionar `EXPO_TOKEN` aos segredos do GitHub, o workflow produz o APK de demonstração com o perfil `preview` e o disponibiliza como anexo de um GitHub Release disparado por uma tag `v*`. As notas da release incluem a página do build EAS e o link direto do artefato.
 
-## Join the community
+Ainda faltam a identidade final do app, `eas.json` e o vínculo do projeto com uma conta Expo. Antes de usar o workflow, conclua essa configuração e prepare as credenciais do primeiro build. Configure um segredo de repositório chamado `EXPO_TOKEN` com um token de acesso pessoal Expo. Não armazene esse token, keystore ou credenciais no repositório; as credenciais de assinatura devem ser gerenciadas pelo EAS.
 
-Join our community of developers creating universal apps.
+Depois de mesclar o workflow na branch padrão, crie e envie uma tag de versão para iniciar a automação:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Build manual:
+
+```sh
+npx eas-cli@latest login
+npx eas-cli@latest build --platform android --profile preview
+```
+
+O APK final ainda não foi gerado. Portanto, tamanho do arquivo, versão mínima do Android e instruções específicas de instalação serão documentados após o primeiro build concluído. Este APK é uma demonstração; publicação na Play Store requer um AAB e conta de desenvolvedor, fora do escopo atual.
+
+## Estrutura
+
+```text
+src/
+  app/            # rota principal Expo Router
+  components/     # busca, cartão, faixas horária/diária e fundo
+  hooks/          # fluxo de localização, consulta e cache
+  playground/     # cenários mockados de desenvolvimento
+  services/       # Open-Meteo e geocodificação
+  styles/         # tokens e sete temas
+  types/          # modelos meteorológicos
+  utils/          # condições, alertas, cache e previsão horária
+```
+
+## Decisões e próximos passos
+
+As justificativas para dependências, arquitetura e trade-offs estão em [`docs/DECISOES.md`](../docs/DECISOES.md); o plano aprovado está em [`docs/PLANO-MOBILE.md`](../docs/PLANO-MOBILE.md).
+
+Próximos passos: configurar a identidade definitiva e os perfis EAS, executar `expo-doctor`, criar o primeiro APK e validar instalação, acessibilidade e desempenho em dispositivos Android reais. Widgets, notificações de chuva, internacionalização e testes ponta a ponta com Maestro permanecem fora do MVP.
