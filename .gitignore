@@ -25,12 +25,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Mobile app credentials and local environment
+# Credentials and local environment
 **/.env*
 !**/.env.example
 **/credentials.json
 **/*.keystore
 **/*.jks
 **/*.p12
-mobile/.expo/
-mobile/android/
