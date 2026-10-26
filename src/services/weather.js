@@ -20,7 +20,8 @@ export async function fetchWeather(latitude, longitude) {
       'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code,is_day,uv_index',
     hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code',
     daily:
-      'temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,sunrise,sunset,weather_code',
+      'temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,uv_index_max,sunrise,sunset,weather_code',
+    forecast_days: '16',
     minutely_15: 'precipitation',
     timezone: 'auto',
   })

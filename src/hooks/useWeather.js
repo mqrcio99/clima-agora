@@ -10,6 +10,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [condition, setCondition] = useState(null)
+  const [locationDenied, setLocationDenied] = useState(false)
 
   const loadWeather = useCallback(async (latitude, longitude, cityName) => {
     try {
@@ -29,6 +30,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
         }),
       )
       setError('')
+      setLocationDenied(false)
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : 'Não foi possível carregar o clima',
@@ -45,6 +47,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
     const start = async () => {
       setLoading(true)
       setError('')
+      setLocationDenied(false)
 
       try {
         if (requestedCity.trim()) {
@@ -71,6 +74,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
             permissionError => {
               if (!cancelled) {
                 setLoading(false)
+                setLocationDenied(permissionError.code === permissionError.PERMISSION_DENIED)
                 setError(
                   permissionError.code === permissionError.PERMISSION_DENIED
                     ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
@@ -114,5 +118,5 @@ export function useWeather({ city: requestedCity = '' } = {}) {
     }
   }, [requestedCity, loadWeather])
 
-  return { data, loading, error, condition }
+  return { data, loading, error, condition, locationDenied }
 }

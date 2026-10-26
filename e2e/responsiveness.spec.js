@@ -28,6 +28,11 @@ async function negarGeolocalizacao(page) {
 }
 
 async function simularPrevisao(page) {
+  const forecastDates = Array.from({ length: 16 }, (_, index) => {
+    const date = new Date(Date.UTC(2026, 9, 13 + index))
+    return date.toISOString().slice(0, 10)
+  })
+
   await page.route('**/v1/search?**', route =>
     route.fulfill({
       contentType: 'application/json',
@@ -47,10 +52,11 @@ async function simularPrevisao(page) {
           is_day: 1,
         },
         daily: {
-          time: ['2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17'],
-          temperature_2m_max: [22, 23, 21, 20, 22],
-          temperature_2m_min: [15, 16, 14, 13, 15],
-          weather_code: [3, 1, 2, 61, 3],
+          time: forecastDates,
+          temperature_2m_max: Array.from({ length: 16 }, (_, index) => 22 + index),
+          temperature_2m_min: Array.from({ length: 16 }, (_, index) => 15 + index),
+          precipitation_probability_max: [25, 75, 25, 80, ...Array(12).fill(20)],
+          weather_code: [3, 1, 2, 61, ...Array(12).fill(3)],
         },
       }),
     }),
@@ -90,9 +96,15 @@ for (const viewport of VIEWPORTS) {
     })
 
     expect(medidas.larguraDocumento).toBeLessThanOrEqual(medidas.larguraViewport)
-    expect(Math.abs(medidas.cartao.x - medidas.previsao.x)).toBeLessThanOrEqual(1)
-    expect(Math.abs(medidas.cartao.width - medidas.previsao.width)).toBeLessThanOrEqual(1)
     expect(Math.abs(medidas.cabecalho.width - medidas.conteudo.width)).toBeLessThanOrEqual(1)
+    expect(medidas.cartao.x).toBeGreaterThanOrEqual(medidas.conteudo.x)
+    expect(medidas.cartao.x + medidas.cartao.width).toBeLessThanOrEqual(
+      medidas.conteudo.x + medidas.conteudo.width,
+    )
+    expect(medidas.previsao.x).toBeGreaterThanOrEqual(medidas.conteudo.x)
+    expect(medidas.previsao.x + medidas.previsao.width).toBeLessThanOrEqual(
+      medidas.conteudo.x + medidas.conteudo.width,
+    )
     expect(medidas.cabecalho.y + medidas.cabecalho.height).toBeLessThanOrEqual(medidas.cartao.y + 1)
     expect(medidas.cartao.y + medidas.cartao.height).toBeLessThanOrEqual(medidas.previsao.y + 1)
   })
@@ -111,6 +123,8 @@ test('contraste AA em todos os temas na TV', async ({ page }) => {
       const card = document.querySelector('.cartao-clima')
       const input = document.querySelector('.busca-cidade input')
       const button = document.querySelector('.busca-cidade button')
+      const navLink = document.querySelector('.cabecalho__link')
+      const navSummary = document.querySelector('.cabecalho__resumo')
       const readColor = value => {
         const rgb = value.match(/rgba?\(([^)]+)\)/)
         if (rgb) {
@@ -137,6 +151,8 @@ test('contraste AA em todos os temas na TV', async ({ page }) => {
       const cardStyle = getComputedStyle(card)
       const inputStyle = getComputedStyle(input)
       const buttonStyle = getComputedStyle(button)
+      const navLinkStyle = getComputedStyle(navLink)
+      const navSummaryStyle = navSummary ? getComputedStyle(navSummary) : null
       const cardColor = readColor(cardStyle.backgroundColor)
       const textColor = readColor(rootStyle.getPropertyValue('--text'))
       const mutedColor = readColor(rootStyle.getPropertyValue('--muted'))
@@ -152,6 +168,13 @@ test('contraste AA em todos os temas na TV', async ({ page }) => {
           readColor(buttonStyle.color),
           readColor(buttonStyle.backgroundColor),
         ),
+        navTextOnNav: ratio(readColor(navLinkStyle.color), readColor(navLinkStyle.backgroundColor)),
+        ...(navSummary && {
+          navSummaryOnNav: ratio(
+            readColor(navSummaryStyle.color),
+            readColor(navLinkStyle.backgroundColor),
+          ),
+        }),
       }
     })
 
@@ -175,10 +198,118 @@ test('só pesquisa a cidade depois de clicar em Buscar', async ({ page }) => {
 
   const campo = page.getByRole('textbox', { name: 'Digite o nome de uma cidade' })
   const botaoBuscar = page.getByRole('button', { name: 'Buscar clima da cidade' })
-  await expect(botaoBuscar).toBeEnabled()
+  await expect(botaoBuscar).toBeDisabled()
   await campo.fill('São Paulo')
+  await expect(botaoBuscar).toBeEnabled()
   expect(chamadasGeocodificacao).toBe(0)
 
   await botaoBuscar.click()
   await expect.poll(() => chamadasGeocodificacao).toBe(1)
+})
+
+test('exibe resumos na navegação e rola até a seção selecionada', async ({ page }) => {
+  await simularPrevisao(page)
+  await carregarPrevisao(page)
+
+  const agora = page.getByRole('link', { name: /Agora/ })
+  const hoje = page.getByRole('link', { name: /Hoje/ })
+  const amanha = page.getByRole('link', { name: /Amanhã/ })
+  const quinzeDias = page.getByRole('link', { name: /15 dias/ })
+
+  await expect(agora).toContainText('20°')
+  await expect(hoje).toContainText('15°/22°')
+  await expect(hoje).toContainText('25% chuva')
+  await expect(amanha).toContainText('16°/23°')
+  await expect(quinzeDias).toContainText('2 dias de chuva')
+  await expect(page.locator('#quinze-dias .cartao-dia')).toHaveCount(16)
+  await expect(hoje).toHaveAttribute('href', '/hoje')
+  await expect(amanha).toHaveAttribute('href', '/amanha')
+  await expect(quinzeDias).toHaveAttribute('href', '/15-dias')
+  await expect(agora).toHaveAttribute('href', '/')
+
+  await hoje.click()
+  await expect
+    .poll(() =>
+      page.locator('#hoje').evaluate(element => Math.abs(element.getBoundingClientRect().top)),
+    )
+    .toBeLessThan(20)
+
+  const navigationHeights = await page
+    .locator('.cabecalho__link')
+    .evaluateAll(links => links.map(link => getComputedStyle(link).height))
+  expect(new Set(navigationHeights).size).toBe(1)
+
+  const summaryContrasts = await hoje.evaluate(link => {
+    const themes = [
+      'clear',
+      'rain',
+      'snow',
+      'cloudy',
+      'night',
+      'storm',
+      'cold',
+      'heat',
+      'wind',
+      'uv',
+    ]
+    const root = link.closest('.app-clima')
+    const summary = link.querySelector('.cabecalho__resumo')
+    const toRgb = color =>
+      color
+        .match(/[\d.]+/g)
+        .slice(0, 3)
+        .map(Number)
+    const luminance = color =>
+      toRgb(color)
+        .map(channel => {
+          const value = channel / 255
+          return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+        })
+        .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0)
+    return themes.map(theme => {
+      root.dataset.theme = theme
+      const surfaceColor = luminance(getComputedStyle(link).backgroundColor)
+      const labelColor = luminance(getComputedStyle(link.querySelector('span:first-child')).color)
+      const summaryColor = luminance(getComputedStyle(summary).color)
+      return {
+        theme,
+        label:
+          (Math.max(labelColor, surfaceColor) + 0.05) / (Math.min(labelColor, surfaceColor) + 0.05),
+        summary:
+          (Math.max(summaryColor, surfaceColor) + 0.05) /
+          (Math.min(summaryColor, surfaceColor) + 0.05),
+      }
+    })
+  })
+  for (const contrast of summaryContrasts) {
+    expect(contrast.label, `${contrast.theme} label`).toBeGreaterThanOrEqual(4.5)
+    expect(contrast.summary, `${contrast.theme} summary`).toBeGreaterThanOrEqual(4.5)
+  }
+})
+
+test('mostra fallback após negar localização e botão Alterar foca a busca', async ({ page }) => {
+  await negarGeolocalizacao(page)
+  await page.goto('/')
+
+  await expect(page.getByText('Local padrão')).toBeVisible()
+  await expect(page.getByText('Permita a localização para ver dados do seu local')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Alterar' }).click()
+  await expect(page.getByRole('textbox', { name: 'Digite o nome de uma cidade' })).toBeFocused()
+})
+
+test('hover destaca a navegação e respeita movimento reduzido', async ({ page }) => {
+  await simularPrevisao(page)
+  await carregarPrevisao(page)
+
+  const link = page.getByRole('link', { name: /Hoje/ })
+  await link.hover()
+  await expect
+    .poll(() => link.evaluate(element => getComputedStyle(element).transform))
+    .not.toBe('none')
+
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect
+    .poll(() => link.evaluate(element => getComputedStyle(element).transform))
+    .toBe('none')
 })

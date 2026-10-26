@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function CitySearch({ onSearch, disabled = false, value = '', onChange }) {
+export function CitySearch({ onSearch, disabled = false, value = '', onChange, inputRef }) {
   const [internalCity, setInternalCity] = useState('')
   const controlledValue = onChange ? value : internalCity
 
@@ -27,6 +27,7 @@ export function CitySearch({ onSearch, disabled = false, value = '', onChange })
       <div className="busca-cidade__linha">
         <input
           id="busca-cidade"
+          ref={inputRef}
           value={controlledValue}
           onChange={event => updateCity(event.target.value)}
           placeholder="Ex.: São Paulo"

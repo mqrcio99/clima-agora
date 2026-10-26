@@ -21,16 +21,23 @@ const CONDITION_LABELS = {
   storm: 'Tempestade',
 }
 
-export function Forecast({ data }) {
+export function Forecast({
+  data,
+  id,
+  title = 'Próximos 5 dias',
+  startIndex = 0,
+  daysToShow = 5,
+  showHourly = true,
+}) {
   const days = data?.daily
   const hourly = getHourlyForecastOverview(data?.hourly ?? {})
   const rainRisk = getRainRiskLevel(hourly)
 
-  if (!days) return null
+  if (!days?.time) return null
 
   return (
-    <section className="previsao" aria-label="Previsão do tempo">
-      {hourly.length > 0 && (
+    <section className="previsao" id={id} aria-label={title}>
+      {showHourly && hourly.length > 0 && (
         <>
           <div className="previsao__cabecalho">
             <h2>Próximas horas</h2>
@@ -55,11 +62,12 @@ export function Forecast({ data }) {
       )}
 
       <div className="previsao__cabecalho">
-        <h2>Próximos 5 dias</h2>
-        <span>Previsão diária</span>
+        <h2>{title}</h2>
+        <span>{daysToShow === 1 ? 'Resumo do dia' : 'Previsão diária'}</span>
       </div>
       <div className="previsao__lista">
-        {days.time.slice(0, 5).map((date, index) => {
+        {days.time.slice(startIndex, startIndex + daysToShow).map((date, offset) => {
+          const index = startIndex + offset
           const day = new Date(`${date}T12:00:00`)
           const formatter =
             typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function'
@@ -68,9 +76,11 @@ export function Forecast({ data }) {
           const label =
             index === 0
               ? 'Hoje'
-              : formatter
-                ? formatter.format(day)
-                : day.toDateString().slice(0, 3)
+              : title === 'Amanhã' && index === 1
+                ? 'Amanhã'
+                : formatter
+                  ? formatter.format(day)
+                  : day.toDateString().slice(0, 3)
           const condition = getWeatherCondition({
             weatherCode: days.weather_code[index],
             temperature: days.temperature_2m_max[index],

@@ -1,0 +1,87 @@
+name: Mobile checks and release
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, types, tests, and formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Run quality checks
+        run: npm run check
+
+  apk-release:
+    name: Build APK and publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Android APK with EAS
+        run: npx eas-cli@latest build --platform android --profile preview --non-interactive --wait
+      - name: Find the finished build from this commit
+        id: eas-build
+        run: |
+          npx eas-cli@latest build:list --platform android --status finished --build-profile preview --git-commit-hash "$GITHUB_SHA" --limit 1 --json > eas-build.json
+          node -e 'const fs = require("node:fs"); const [build] = JSON.parse(fs.readFileSync("eas-build.json", "utf8")); if (!build?.id || !build.app?.ownerAccount?.name || !build.app?.slug || !build.artifacts?.buildUrl) { throw new Error("Could not resolve the finished EAS build and its download URL."); } const page = `https://expo.dev/accounts/${build.app.ownerAccount.name}/projects/${build.app.slug}/builds/${build.id}`; fs.appendFileSync(process.env.GITHUB_OUTPUT, `id=${build.id}\npage=${page}\nartifact=${build.artifacts.buildUrl}\n`);'
+      - name: Download the exact APK
+        env:
+          EAS_BUILD_ID: ${{ steps.eas-build.outputs.id }}
+        run: |
+          npx eas-cli@latest build:download --build-id "$EAS_BUILD_ID" --non-interactive
+          apk_path="$(find . -maxdepth 1 -type f -iname '*.apk' -print -quit)"
+          if [ -z "$apk_path" ]; then
+            echo "EAS did not download an APK into the mobile project directory." >&2
+            exit 1
+          fi
+          mv "$apk_path" clima-agora.apk
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EAS_BUILD_PAGE: ${{ steps.eas-build.outputs.page }}
+          EAS_ARTIFACT_URL: ${{ steps.eas-build.outputs.artifact }}
+        run: |
+          printf 'EAS build page: %s\n\nDirect EAS artifact: %s\n' \
+            "$EAS_BUILD_PAGE" \
+            "$EAS_ARTIFACT_URL" > release-notes.md
+          gh release create "$GITHUB_REF_NAME" clima-agora.apk \
+            --title "Clima Agora $GITHUB_REF_NAME" \
+            --notes-file release-notes.md

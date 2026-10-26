@@ -1,0 +1,83 @@
+# Decisões técnicas
+
+Este documento registra os motivos das bibliotecas e camadas escolhidas para o app mobile. As versões exatas são as compatíveis com o Expo SDK 57 selecionado após consulta à documentação oficial em 19/10/2026; atualizar SDK exige rever a matriz de compatibilidade e as instruções correspondentes.
+
+## Plataforma e organização
+
+- **React Native com Expo:** permite desenvolver e distribuir um APK Android sem manter projetos nativos paralelos à mão. Configurações nativas devem ser feitas via `app.json` e config plugins, mantendo Continuous Native Generation.
+- **Pasta `mobile/`:** separa dependências e scripts do site React/Vite atual, sem converter o repositório inteiro em monorepo.
+- **Expo Router:** escolhido pelo arquiteto. Mantém rotas baseadas em arquivos e deixa uma estrutura de navegação pronta para futuras telas; o MVP expõe somente a tela principal.
+- **TypeScript estrito:** reduz erros de formato nos dados paralelos da API e nas props; aplicado apenas ao código mobile.
+- **`StyleSheet` e tokens próprios:** estilos nativos tipados, reutilizáveis nos sete temas, sem runtime CSS-in-JS ou classes utilitárias adicionais.
+
+## Bibliotecas de runtime
+
+| Biblioteca                                          | Uso e justificativa                                                                                                                                                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `expo`                                              | Runtime e ferramentas da plataforma Expo, incluindo comandos de desenvolvimento e integração com módulos nativos. SDK 57 mantém compatibilidade com Expo Go em aparelho físico durante a transição oficial para SDK 58. |
+| `expo-router`                                       | Rotas da aplicação, configuração de stack e integração de deep links.                                                                                                                                                   |
+| `expo-location`                                     | Solicitar permissão em primeiro plano e obter coordenadas para a consulta meteorológica; o app não requer localização em segundo plano.                                                                                 |
+| `@react-native-async-storage/async-storage`         | Persistir a última cidade e o cache pequeno da última previsão entre reinicializações. Cache meteorológico não é dado secreto; AsyncStorage não oferece criptografia.                                                   |
+| `react-native-reanimated` e `react-native-worklets` | Animações de fundo executadas no runtime de animação, com limitação de partículas e controle de pausa/acessibilidade. Worklets é o runtime complementar exigido pela versão do Reanimated alinhada ao SDK 57.           |
+| `expo-linear-gradient`                              | Renderiza os gradientes dos sete temas em Android/iOS sem criar camadas de Views para simular transições de cor.                                                                                                        |
+| `react-native-safe-area-context`                    | Respeitar recortes, barras do sistema e safe areas em diferentes dispositivos.                                                                                                                                          |
+| `react-native-screens`                              | Integração nativa de telas usada pela navegação Expo Router.                                                                                                                                                            |
+| `react-native-gesture-handler`                      | Infraestrutura de gestos usada pelo stack/navigation do Expo Router.                                                                                                                                                    |
+| `expo-linking` e `expo-constants`                   | Integrações de links, rotas e metadados consumidas pelo Expo Router.                                                                                                                                                    |
+| `expo-splash-screen`                                | Controlar a tela de abertura enquanto o app inicializa.                                                                                                                                                                 |
+| `expo-status-bar`                                   | Adaptar o estilo dos ícones da barra de status aos temas climáticos.                                                                                                                                                    |
+| `expo-system-ui`                                    | Definir cores do sistema compatíveis com o tema e o fundo da tela.                                                                                                                                                      |
+| `react-dom` e `react-native-web`                    | Manter o preview universal de desenvolvimento pelo navegador que acompanha o Expo Router; o APK continua sendo o artefato principal e não recebe o runtime web.                                                         |
+
+React e React Native são a base de interface e não são camadas opcionais. Não se adotou TanStack Query, React Navigation em paralelo ao Router, MMKV, Skia, NativeWind, styled-components, Lottie, biblioteca de ícones ou armazenamento criptografado: o escopo não justifica os custos adicionais.
+
+## Dados, rede e comportamento
+
+- **Open-Meteo:** fonte meteorológica e de busca de cidades sem chave de API. O serviço mobile encapsula a API e mapeia os arrays horários para objetos tipados.
+- **Compatibilidade dos alertas:** a consulta mantém `minutely_15=precipitation` e a precipitação horária do site. Esse dado é mapeado separadamente, sem ampliar o formato público exigido para cada item horário.
+- **Animações de fundo:** até 14 elementos por condição, sem canvas; as animações param quando o app sai de primeiro plano, quando o usuário desativa o playground ou quando o sistema pede movimento reduzido.
+- **BigDataCloud reverse geocoding:** mantido do site para obter nome aproximado a partir das coordenadas, sujeito à disponibilidade do serviço. A previsão não deve depender do sucesso dessa resolução de nome.
+- **Hooks React e estado local:** suficientes para a tela, pesquisa, carregamento e seleção de detalhes da hora; Context só será introduzido se houver estado realmente compartilhado.
+- **Cache AsyncStorage próprio:** guarda a última previsão e seu instante de captura para permitir visualização offline com indicação de dados possivelmente desatualizados; não é uma base de dados geral.
+- **Localidade do cache e atualização:** o cache também guarda o nome exibido. Cidade pesquisada é lembrada; coordenadas do dispositivo são consultadas novamente ao atualizar para não manter uma localização antiga depois de uma viagem.
+- **Nenhum i18n no MVP:** textos em português brasileiro, agrupados para permitir internacionalização futura sem adicionar dependência antes de haver outros idiomas.
+
+## Desenvolvimento, testes e distribuição
+
+- **`jest-expo` + Jest:** preset oficial Expo para testar módulos e componentes sem executar um dispositivo nativo.
+- **React Native Testing Library:** testes de interação/renderização por comportamento acessível, em vez de detalhes internos.
+- **`test-renderer` 1.2.x:** implementação usada pela versão atual da React Native Testing Library; permanece alinhada ao React 19.2 do SDK 57, evitando a versão mais recente que exige React 19.3.
+- **ESLint com `eslint-config-expo`:** padrões de React Native/Expo e hooks adequados à plataforma.
+- **Prettier e plugin ESLint:** formatação consistente e verificável no mesmo comando de qualidade.
+- **EAS Build:** compilar e assinar na nuvem sem exigir Android Studio/JDK para o build de distribuição. O EAS gerencia a keystore; autenticação ficará fora do repositório.
+- **GitHub Actions:** executar lint, tipos, testes e formatação em pushes/PRs; tags `v*` também iniciam um APK `preview` no EAS e uma GitHub Release com o APK, a página do build e o link direto do artefato. A seleção do artefato usa ID filtrado pelo commit da tag para não anexar outro build concorrente. `EXPO_TOKEN` é um segredo configurado pelo mantenedor no GitHub, nunca um arquivo versionado. A credencial Expo e a keystore são pré-requisitos externos, não são geradas nem incluídas pelo workflow.
+- **Release com `preview`:** o perfil interno gera APK instalável para demonstração e partilha; o perfil `production` permanece separado para uma futura distribuição de produção, sem publicar automaticamente um artefato distinto na release GitHub.
+- **Identidade de distribuição:** nome `Clima Agora`, slug `clima-agora`, pacote Android `app.climaagora`, versão `1.0.0` e `versionCode` inicial `1`, conforme as escolhas da entrevista. Os novos PNGs de ícone, ícone adaptativo monocromático e splash usam um símbolo meteorológico simples; os assets originais do template foram preservados. `projectId` não é inventado: será ligado à conta Expo do mantenedor pelo `eas init`.
+- **Permissões de localização:** o config plugin do Expo Location descreve o uso em primeiro plano e desativa explicitamente localização em segundo plano e serviço em primeiro plano. A busca por clima não requer permissão para operar em background.
+- **EAS gratuito (consultado em 19/10/2026):** até 15 builds Android e 15 iOS por mês no plano Free, fila de baixa prioridade e timeout de 45 minutos por build; a Expo informa que filas podem passar de 90 minutos em períodos de pico. A fila é variável, não uma garantia de duração.
+- **Maestro adiado:** os testes unitários e de componentes cobrem a primeira entrega; testes ponta a ponta acrescentam custo de execução e manutenção que não é necessário para iniciar o MVP.
+
+## Referências consultadas
+
+- [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/)
+- [Expo Router SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/router/)
+- [Reanimated SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/reanimated/)
+- [Expo Location SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/location/)
+- [Expo LinearGradient SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/linear-gradient/)
+- [AsyncStorage SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/async-storage/)
+- [Jest no Expo](https://docs.expo.dev/develop/unit-testing/)
+- [ESLint e Prettier no Expo](https://docs.expo.dev/guides/using-eslint/)
+- [EAS Build em CI](https://docs.expo.dev/build/building-on-ci/)
+- [Distribuição interna EAS](https://docs.expo.dev/build/internal-distribution/)
+- [Configuração eas.json](https://docs.expo.dev/build/eas-json/)
+- [Gerar APK](https://docs.expo.dev/build-reference/apk/)
+- [Referência EAS CLI](https://docs.expo.dev/eas/cli/)
+- [Expo Location SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/location/)
+- [Referência de configuração do Expo](https://docs.expo.dev/versions/v57.0.0/config/app/)
+- [Planos e limites EAS](https://expo.dev/pricing)
+
+Dependências de suporte remanescentes do template serão removidas se não forem utilizadas no app final; toda dependência direta mantida deverá ter motivo listado neste documento.
+
+### Exceção temporária de lint no ambiente Windows
+
+O preset Expo também habilita regras de resolução (`import/namespace`, `import/no-named-as-default`, `import/no-named-as-default-member`, `import/no-unresolved` e `import/no-duplicates`) que carregam `unrs-resolver`, uma extensão nativa. Neste ambiente Windows o binding não carrega porque falta `vcruntime140_1.dll`; os imports mobile continuam cobertos pelo TypeScript estrito e pelo bundler Metro. Para manter lint executável neste ambiente, somente essas regras de resolução estão desativadas. A exceção deve ser reavaliada caso o runtime C++ seja instalado ou o resolver passe a carregar; nenhuma regra de hooks, TypeScript, React ou Expo foi desativada.
