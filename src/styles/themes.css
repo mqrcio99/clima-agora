@@ -394,7 +394,7 @@ button {
   color: #374151;
   font-size: 0.66rem;
   line-height: 0.8rem;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -614,9 +614,10 @@ a:focus-visible {
   position: relative;
   display: flex;
   align-items: flex-start;
+  min-width: 0;
   gap: 10px;
   margin: 18px 0 10px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
   border-radius: 16px;
@@ -643,6 +644,7 @@ a:focus-visible {
   place-items: center;
   width: 34px;
   height: 34px;
+  flex: 0 0 34px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent) 20%, transparent);
   font-size: 1.2rem;
@@ -652,6 +654,11 @@ a:focus-visible {
 .alert-banner strong,
 .alert-banner small {
   display: block;
+  overflow-wrap: anywhere;
+}
+
+.alert-banner > div {
+  min-width: 0;
 }
 
 .alert-banner strong {
@@ -673,7 +680,7 @@ a:focus-visible {
 }
 
 .cartao-clima {
-  padding: 20px;
+  padding: clamp(14px, 3vw, 20px);
   animation: weather-content-in 0.65s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
@@ -760,6 +767,26 @@ a:focus-visible {
   gap: 10px;
 }
 
+.secoes-previsao #quinze-dias .previsao__lista {
+  grid-auto-flow: row;
+  grid-auto-columns: auto;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
+}
+
+.secoes-previsao #quinze-dias .cartao-dia {
+  grid-template-columns: minmax(38px, auto) 32px minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.secoes-previsao #quinze-dias .cartao-dia__label {
+  min-height: 0;
+}
+
 .grade-metricas div {
   padding: 14px 12px;
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
@@ -783,7 +810,8 @@ a:focus-visible {
 }
 
 .previsao {
-  padding: 20px;
+  min-width: 0;
+  padding: clamp(14px, 3vw, 20px);
 }
 
 .previsao__cabecalho {
@@ -815,6 +843,10 @@ a:focus-visible {
   padding: 4px 2px 8px;
   scrollbar-width: thin;
   scroll-snap-type: x proximity;
+}
+
+.previsao__lista::-webkit-scrollbar {
+  height: 6px;
 }
 
 .cartao-dia {
@@ -1216,6 +1248,24 @@ a:focus-visible {
     padding: 24px;
   }
 
+  .secoes-previsao #quinze-dias .previsao__lista {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .secoes-previsao #quinze-dias .cartao-dia {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: initial;
+    min-width: 88px;
+    padding: 18px;
+    text-align: center;
+  }
+
+  .secoes-previsao #quinze-dias .cartao-dia__label {
+    min-height: 2.1em;
+  }
+
   .transicao-localizacao {
     min-height: clamp(300px, 56vh, 470px);
     gap: clamp(18px, 4vh, 25px);
@@ -1297,7 +1347,11 @@ a:focus-visible {
   }
 
   .grade-clima {
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grade-metricas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .previsao {
@@ -1306,6 +1360,19 @@ a:focus-visible {
 
   .secoes-previsao {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .grade-metricas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .previsao__lista[aria-label='Previsão das próximas horas'] {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(120px, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
   }
 }
 
@@ -1325,10 +1392,29 @@ a:focus-visible {
       max(env(safe-area-inset-bottom), 5%) max(env(safe-area-inset-left), 5%);
   }
 
+  .cabecalho {
+    margin-bottom: clamp(28px, 2vh, 40px);
+  }
+
+  .grade-clima,
+  .secoes-previsao {
+    gap: clamp(18px, 1.5vw, 28px);
+  }
+
+  .app-clima[data-device='tv'] .cartao-clima,
+  .app-clima[data-device='tv'] .previsao {
+    padding: clamp(24px, 2vw, 36px);
+  }
+
   .cartao-clima,
   .previsao,
   .transicao-localizacao {
     border-radius: 32px;
+  }
+
+  .app-clima[data-device='tv'] :focus-visible {
+    outline-width: 4px;
+    outline-offset: 4px;
   }
 }
 

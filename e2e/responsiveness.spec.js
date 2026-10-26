@@ -14,7 +14,18 @@ const VIEWPORTS = [
   { name: 'TV', width: 1920, height: 1080 },
 ]
 
-const CONDITIONS = ['clear', 'rain', 'cloudy', 'storm', 'cold', 'snow', 'night']
+const CONDITIONS = [
+  'clear',
+  'rain',
+  'cloudy',
+  'storm',
+  'cold',
+  'snow',
+  'night',
+  'heat',
+  'wind',
+  'uv',
+]
 
 async function negarGeolocalizacao(page) {
   await page.addInitScript(() => {
@@ -53,6 +64,15 @@ async function simularPrevisao(page) {
           weather_code: 3,
           is_day: 1,
         },
+        hourly: {
+          time: Array.from({ length: 24 }, (_, index) =>
+            new Date(Date.now() + index * 60 * 60 * 1000).toISOString().slice(0, 16),
+          ),
+          temperature_2m: Array(24).fill(20),
+          precipitation_probability: Array(24).fill(90),
+          precipitation: Array(24).fill(3),
+          weather_code: Array(24).fill(61),
+        },
         daily: {
           time: forecastDates,
           temperature_2m_max: Array.from({ length: 16 }, (_, index) => 22 + index),
@@ -65,8 +85,8 @@ async function simularPrevisao(page) {
   )
 }
 
-async function carregarPrevisao(page) {
-  await page.goto('/?debug=cloudy')
+async function carregarPrevisao(page, condition = 'cloudy') {
+  await page.goto(`/?debug=${condition}`)
   const campo = page.getByRole('textbox', { name: 'Digite o nome de uma cidade' })
   await campo.fill('Lisboa')
   await page.getByRole('button', { name: 'Buscar clima da cidade' }).click()
@@ -163,6 +183,95 @@ test('menu mobile abre, fecha com Esc e clique fora, e mantém resumos compactos
   await expect(menu).toHaveAttribute('aria-expanded', 'false')
 })
 
+test('controles essenciais ficam acessíveis nas larguras mobile, tablet e desktop', async ({
+  page,
+}) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+  const targetWidths = [360, 390, 768, 1024, 1440, 1920]
+
+  for (const width of targetWidths) {
+    await page.setViewportSize({ width, height: 900 })
+    await carregarPrevisao(page)
+
+    if (width < 640) {
+      await page.getByRole('button', { name: 'Abrir menu' }).click()
+    }
+
+    const navigation = page.getByRole('navigation', { name: 'Previsão do tempo' })
+    const navLinks = navigation.getByRole('link')
+    await expect(page.locator('.marca')).toBeVisible()
+    await expect(page.locator('.busca-cidade')).toBeVisible()
+    await expect(navLinks).toHaveCount(4)
+    await expect(page.locator('.cartao-clima')).toBeVisible()
+
+    const viewportBounds = await page.evaluate(() => {
+      const withinHorizontalViewport = element => {
+        const rect = element.getBoundingClientRect()
+        return rect.left >= -1 && rect.right <= innerWidth + 1
+      }
+      const card = document.querySelector('.cartao-clima').getBoundingClientRect()
+      const selectors = ['.marca', '.busca-cidade', '.cartao-clima']
+      return {
+        noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth,
+        elementsInsideViewport: selectors.every(selector =>
+          [...document.querySelectorAll(selector)]
+            .filter(element => getComputedStyle(element).display !== 'none')
+            .every(withinHorizontalViewport),
+        ),
+        cardIntersectsViewport: card.bottom > 0 && card.top < innerHeight,
+        navIsScrollable:
+          document.querySelector('.cabecalho__navegacao').scrollWidth >
+          document.querySelector('.cabecalho__navegacao').clientWidth,
+      }
+    })
+
+    expect(viewportBounds.noHorizontalOverflow, `${width}px`).toBe(true)
+    expect(viewportBounds.elementsInsideViewport, `${width}px`).toBe(true)
+    expect(viewportBounds.cardIntersectsViewport, `${width}px`).toBe(true)
+
+    if (width < 640) {
+      expect(
+        viewportBounds.navIsScrollable,
+        `${width}px: navegação deve rolar horizontalmente`,
+      ).toBe(true)
+      for (const link of await navLinks.all()) {
+        await link.scrollIntoViewIfNeeded()
+        const isInsideViewport = await link.evaluate(element => {
+          const rect = element.getBoundingClientRect()
+          return rect.left >= -1 && rect.right <= innerWidth + 1
+        })
+        expect(isInsideViewport, `${width}px: botão de navegação acessível ao rolar`).toBe(true)
+      }
+
+      await navLinks.filter({ hasText: '15 dias' }).click()
+      await expect
+        .poll(
+          () =>
+            page.locator('#quinze-dias').evaluate(element => element.getBoundingClientRect().top),
+          { timeout: 5000 },
+        )
+        .toBeLessThan(60)
+      const sectionTop = await page
+        .locator('#quinze-dias')
+        .evaluate(element => element.getBoundingClientRect().top)
+      const headerBottom = await page
+        .locator('.cabecalho')
+        .evaluate(element => element.getBoundingClientRect().bottom)
+      expect(Math.abs(sectionTop), `${width}px: âncora fora do alinhamento`).toBeLessThan(60)
+      expect(headerBottom, `${width}px: header não deve cobrir a seção`).toBeLessThan(sectionTop)
+    } else {
+      const linksInsideViewport = await navLinks.evaluateAll(links =>
+        links.every(link => {
+          const rect = link.getBoundingClientRect()
+          return rect.left >= -1 && rect.right <= innerWidth + 1
+        }),
+      )
+      expect(linksInsideViewport, `${width}px: navegação dentro da viewport`).toBe(true)
+    }
+  }
+})
+
 test('header se reorganiza em duas linhas no tablet e uma no desktop', async ({ page }) => {
   await negarGeolocalizacao(page)
   await simularPrevisao(page)
@@ -203,6 +312,110 @@ test('header se reorganiza em duas linhas no tablet e uma no desktop', async ({ 
   expect(desktopLayout.brandInsideHeader).toBe(true)
   expect(desktopLayout.navigationInsideHeader).toBe(true)
   expect(desktopLayout.searchInsideHeader).toBe(true)
+})
+
+test('conteúdo do clima adapta listas, métricas e alerta em celular e tablet', async ({ page }) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+
+  for (const width of [390, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    await carregarPrevisao(page)
+
+    const layout = await page.evaluate(() => {
+      const columns = element =>
+        getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length
+      const dailyList = document.querySelector('#quinze-dias .previsao__lista')
+      const dailyCards = [...dailyList.querySelectorAll('.cartao-dia')]
+      const hourlyList = document.querySelector(
+        '.previsao__lista[aria-label="Previsão das próximas horas"]',
+      )
+      const alert = document.querySelector('.alert-banner')
+      const alertText = alert?.querySelector('small')
+      const alertRect = alert?.getBoundingClientRect()
+      const alertTextRect = alertText?.getBoundingClientRect()
+
+      return {
+        width: innerWidth,
+        metricColumns: columns(document.querySelector('.grade-metricas')),
+        dailyColumns: columns(dailyList),
+        dailyFlow: getComputedStyle(dailyList).gridAutoFlow,
+        dailyCardsFit: dailyCards.every(card => card.scrollWidth <= card.clientWidth + 1),
+        dailyCardsStacked: dailyCards.every(
+          (card, index) =>
+            index === 0 ||
+            Math.abs(
+              card.getBoundingClientRect().left - dailyCards[0].getBoundingClientRect().left,
+            ) < 1,
+        ),
+        hourlyScrollable: hourlyList.scrollWidth > hourlyList.clientWidth,
+        hourlySnap: getComputedStyle(hourlyList).scrollSnapType,
+        alertWraps:
+          alertText &&
+          Number.parseFloat(getComputedStyle(alertText).height) >
+            Number.parseFloat(getComputedStyle(alertText).lineHeight),
+        alertTextFits:
+          alertText &&
+          alertText.scrollWidth <= alertText.clientWidth + 1 &&
+          alertTextRect.right <= alertRect.right + 1 &&
+          alertTextRect.bottom <= alertRect.bottom + 1,
+      }
+    })
+
+    expect(layout.dailyFlow).toBe('row')
+    expect(layout.dailyCardsFit).toBe(true)
+    expect(layout.hourlyScrollable).toBe(true)
+    expect(layout.hourlySnap).toContain('x')
+    expect(layout.alertTextFits).toBe(true)
+
+    if (width < 640) {
+      expect(layout.dailyColumns).toBe(1)
+      expect(layout.dailyCardsStacked).toBe(true)
+      expect(layout.metricColumns).toBe(2)
+      expect(layout.alertWraps).toBe(true)
+    } else {
+      expect(layout.dailyColumns).toBe(5)
+      expect(layout.metricColumns).toBe(4)
+    }
+  }
+})
+
+test('card ocupa a largura do conteúdo e resumo de 15 dias não corta no desktop e TV', async ({
+  page,
+}) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+  await carregarPrevisao(page)
+
+  for (const width of [1024, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 1080 })
+    const desktopLayout = await page.evaluate(() => {
+      const content = document.querySelector('.conteudo-clima').getBoundingClientRect()
+      const card = document.querySelector('.cartao-clima').getBoundingClientRect()
+      const visibleSummary = [
+        ...document.querySelectorAll('.cabecalho__link[href="/15-dias"] .cabecalho__resumo'),
+      ].find(element => getComputedStyle(element).display !== 'none')
+
+      return {
+        contentWidth: content.width,
+        cardWidth: card.width,
+        summaryText: visibleSummary?.innerText,
+        summaryHasEllipsis: visibleSummary?.innerText.includes('…') ?? true,
+        summaryFits: visibleSummary
+          ? visibleSummary.scrollWidth <= visibleSummary.clientWidth + 1
+          : false,
+        metricColumns: getComputedStyle(
+          document.querySelector('.grade-metricas'),
+        ).gridTemplateColumns.split(' ').length,
+      }
+    })
+
+    expect(desktopLayout.cardWidth).toBeCloseTo(desktopLayout.contentWidth, 0)
+    expect(desktopLayout.summaryFits).toBe(true)
+    expect(desktopLayout.summaryHasEllipsis).toBe(false)
+    expect(desktopLayout.metricColumns).toBe(4)
+    expect(desktopLayout.summaryText).toContain('chuvosos')
+  }
 })
 
 test('contraste AA em todos os temas na TV', async ({ page }) => {
@@ -275,6 +488,157 @@ test('contraste AA em todos os temas na TV', async ({ page }) => {
 
     for (const [text, ratio] of Object.entries(contrast)) {
       expect(ratio, `${condition}: ${text}`).toBeGreaterThanOrEqual(4.5)
+    }
+  }
+})
+
+test('contraste e visibilidade dos elementos nos temas em celular, tablet e desktop', async ({
+  page,
+}) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+
+    for (const condition of CONDITIONS) {
+      await carregarPrevisao(page, condition)
+      await expect(page.locator('.app-clima')).toHaveAttribute('data-theme', condition)
+
+      if (width < 640) {
+        await page.getByRole('button', { name: 'Abrir menu' }).click()
+      }
+
+      await expect(page.locator('.cartao-clima')).toBeVisible()
+      await expect(page.locator('.alert-banner')).toBeVisible()
+      await expect(page.locator('.cabecalho__localizacao')).toBeVisible()
+
+      const result = await page.evaluate(() => {
+        const readColor = value => {
+          const srgb = value.match(/color\(srgb\s+([^)]+)\)/)
+          if (srgb) {
+            return srgb[1]
+              .match(/[\d.]+/g)
+              .slice(0, 3)
+              .map(channel => Number(channel) * 255)
+          }
+          const rgb = value.match(/rgba?\(([^)]+)\)/)
+          if (rgb) {
+            return rgb[1].split(',').slice(0, 3).map(Number)
+          }
+          const hex = value.trim().slice(1)
+          const normalized =
+            hex.length === 3 ? [...hex].map(channel => channel.repeat(2)).join('') : hex
+          return [0, 2, 4].map(index => Number.parseInt(normalized.slice(index, index + 2), 16))
+        }
+        const readAlpha = value => {
+          const alpha = value.match(/\/\s*([\d.]+)%?\s*\)/)
+          if (!alpha) {
+            return 1
+          }
+          const opacity = Number(alpha[1])
+          return value.includes('%') ? opacity / 100 : opacity
+        }
+        const composite = (foreground, background, opacity) =>
+          foreground.map((channel, index) => channel * opacity + background[index] * (1 - opacity))
+        const luminance = color =>
+          color
+            .map(value => {
+              const channel = value / 255
+              return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+            })
+            .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0)
+        const contrast = (foreground, background) => {
+          const first = luminance(foreground)
+          const second = luminance(background)
+          return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05)
+        }
+        const root = document.querySelector('.app-clima')
+        const rootStyle = getComputedStyle(root)
+        const card = document.querySelector('.cartao-clima')
+        const cardColor = readColor(getComputedStyle(card).backgroundColor)
+        const textColor = readColor(rootStyle.getPropertyValue('--text'))
+        const mutedColor = readColor(rootStyle.getPropertyValue('--muted'))
+        const navLink = document.querySelector('.cabecalho__link')
+        const navLinkStyle = getComputedStyle(navLink)
+        const visibleSummary = [...document.querySelectorAll('.cabecalho__resumo')].find(
+          element => getComputedStyle(element).display !== 'none',
+        )
+        const metrics = document.querySelector('.grade-metricas')
+        const metric = metrics.querySelector('div')
+        const metricBackgroundStyle = getComputedStyle(metric).backgroundColor
+        const metricBackground = composite(
+          readColor(metricBackgroundStyle),
+          cardColor,
+          readAlpha(metricBackgroundStyle),
+        )
+        const alertText = document.querySelector('.alert-banner small')
+        const alertBackground = getComputedStyle(
+          document.querySelector('.alert-banner'),
+        ).backgroundImage
+        const alertStops = alertBackground.match(/color\(srgb[^)]+\)/g) ?? []
+        const alertSurfaces = alertStops.map(stop =>
+          composite(readColor(stop), cardColor, readAlpha(stop)),
+        )
+        const summaryStyle = visibleSummary ? getComputedStyle(visibleSummary) : null
+        const summaryBackground = readColor(navLinkStyle.backgroundColor)
+        const metricText = metric.querySelector('span')
+        const locationName = document.querySelector('.cabecalho__localizacao-nome')
+        const locationButton = document.querySelector('.cabecalho__alterar')
+        const bounds = [
+          ...document.querySelectorAll('.cabecalho, .busca-cidade, .cartao-clima, .alert-banner'),
+        ]
+          .filter(element => getComputedStyle(element).display !== 'none')
+          .map(element => {
+            const rect = element.getBoundingClientRect()
+            return rect.left >= -1 && rect.right <= innerWidth + 1
+          })
+
+        return {
+          contrasts: {
+            cardText: contrast(textColor, cardColor),
+            cardMutedText: contrast(mutedColor, cardColor),
+            navLabel: contrast(
+              readColor(getComputedStyle(navLink.querySelector('span:first-child')).color),
+              summaryBackground,
+            ),
+            navSummary: visibleSummary
+              ? contrast(readColor(summaryStyle.color), summaryBackground)
+              : null,
+            locationName: contrast(readColor(getComputedStyle(locationName).color), cardColor),
+            locationButton: contrast(
+              readColor(getComputedStyle(locationButton).color),
+              readColor(getComputedStyle(locationButton).backgroundColor),
+            ),
+            alertDescription: alertText
+              ? Math.min(
+                  ...alertSurfaces.map(surface =>
+                    contrast(readColor(getComputedStyle(alertText).color), surface),
+                  ),
+                )
+              : null,
+            metricLabel: contrast(readColor(getComputedStyle(metricText).color), metricBackground),
+            metricValue: contrast(
+              readColor(getComputedStyle(metric.querySelector('strong')).color),
+              metricBackground,
+            ),
+          },
+          noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth,
+          elementsWithinViewport: bounds.every(Boolean),
+          summaryVisible: Boolean(visibleSummary),
+          alertBackgroundStops: alertSurfaces.length,
+        }
+      })
+
+      for (const [element, ratio] of Object.entries(result.contrasts)) {
+        if (ratio !== null) {
+          expect(ratio, `${condition} at ${width}px: ${element}`).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+      expect(result.noHorizontalOverflow, `${condition} at ${width}px`).toBe(true)
+      expect(result.elementsWithinViewport, `${condition} at ${width}px`).toBe(true)
+      expect(result.summaryVisible, `${condition} at ${width}px`).toBe(true)
+      expect(result.alertBackgroundStops, `${condition} at ${width}px`).toBe(2)
     }
   }
 })
