@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CitySearch } from '../CitySearch/CitySearch.jsx'
 
 function getSummaryText(item, summary) {
@@ -15,7 +15,7 @@ function getSummaryText(item, summary) {
         : null
     case 'hoje':
       return [itemSummary.min, itemSummary.max, itemSummary.chuvaProb].every(Number.isFinite)
-        ? `${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}° · ${Math.round(itemSummary.chuvaProb)}% chuva`
+        ? `${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}° · ${Math.round(itemSummary.chuvaProb)}%`
         : null
     case 'amanha':
       return itemSummary.icone && [itemSummary.min, itemSummary.max].every(Number.isFinite)
@@ -23,7 +23,36 @@ function getSummaryText(item, summary) {
         : null
     case 'quinzeDias':
       return [itemSummary.min, itemSummary.max, itemSummary.diasComChuva].every(Number.isFinite)
-        ? `${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}° · ${itemSummary.diasComChuva} dias de chuva`
+        ? `${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}° · ${itemSummary.diasComChuva} chuvosos`
+        : null
+    default:
+      return null
+  }
+}
+
+function getCompactSummaryText(item, summary) {
+  const itemSummary = summary?.[item.resumo]
+
+  if (!itemSummary) {
+    return null
+  }
+
+  switch (item.resumo) {
+    case 'agora':
+      return itemSummary.icone && Number.isFinite(itemSummary.temperatura)
+        ? `${itemSummary.icone} ${Math.round(itemSummary.temperatura)}°`
+        : null
+    case 'hoje':
+      return [itemSummary.min, itemSummary.max].every(Number.isFinite)
+        ? `${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}°`
+        : null
+    case 'amanha':
+      return itemSummary.icone && [itemSummary.min, itemSummary.max].every(Number.isFinite)
+        ? `${itemSummary.icone} ${Math.round(itemSummary.min)}°/${Math.round(itemSummary.max)}°`
+        : null
+    case 'quinzeDias':
+      return Number.isFinite(itemSummary.diasComChuva)
+        ? `${itemSummary.diasComChuva} chuvosos`
         : null
     default:
       return null
@@ -47,9 +76,45 @@ export function Header({
   onSearch,
 }) {
   const searchInputRef = useRef(null)
+  const headerRef = useRef(null)
+  const menuButtonRef = useRef(null)
+  const navigationRef = useRef(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return undefined
+    }
+
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+    const handlePointerDown = event => {
+      if (!headerRef.current?.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (menuOpen) {
+      navigationRef.current?.querySelector('a')?.focus()
+    }
+  }, [menuOpen])
 
   return (
-    <header className="cabecalho">
+    <header className={`cabecalho${menuOpen ? ' cabecalho--menu-aberto' : ''}`} ref={headerRef}>
       <div className="marca">
         <span className="marca__icone" aria-hidden="true">
           ☀
@@ -57,23 +122,53 @@ export function Header({
         <span>Clima Agora</span>
       </div>
 
+      <button
+        className="cabecalho__menu"
+        type="button"
+        aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+        aria-expanded={menuOpen}
+        aria-controls="navegacao-clima"
+        ref={menuButtonRef}
+        onClick={() => setMenuOpen(open => !open)}
+      >
+        <span aria-hidden="true">{menuOpen ? '×' : '☰'}</span>
+      </button>
+
       <div className="cabecalho__navegacao-grupo">
-        <nav className="cabecalho__navegacao" aria-label="Previsão do tempo">
+        <nav
+          className="cabecalho__navegacao"
+          id="navegacao-clima"
+          aria-label="Previsão do tempo"
+          ref={navigationRef}
+        >
           {items.map(item => {
             const summaryText = error ? null : getSummaryText(item, resumo)
+            const compactSummaryText = error ? null : getCompactSummaryText(item, resumo)
 
             return (
               <a
                 className="cabecalho__link"
                 href={item.href}
                 key={item.id}
-                onClick={event => scrollToSection(event, item)}
+                onClick={event => {
+                  scrollToSection(event, item)
+                  setMenuOpen(false)
+                }}
               >
                 <span>{item.label}</span>
                 {loading && !error ? (
                   <span className="cabecalho__skeleton" aria-hidden="true" />
                 ) : summaryText ? (
-                  <span className="cabecalho__resumo">{summaryText}</span>
+                  <>
+                    <span className="cabecalho__resumo cabecalho__resumo--completo">
+                      {summaryText}
+                    </span>
+                    {compactSummaryText && (
+                      <span className="cabecalho__resumo cabecalho__resumo--compacto">
+                        {compactSummaryText}
+                      </span>
+                    )}
+                  </>
                 ) : null}
               </a>
             )

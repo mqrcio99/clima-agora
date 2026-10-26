@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test'
 
 const VIEWPORTS = [
   { name: 'celular compacto', width: 320, height: 720 },
+  { name: 'celular pequeno', width: 360, height: 800 },
   { name: 'celular', width: 390, height: 844 },
+  { name: 'celular amplo', width: 430, height: 900 },
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'tablet grande', width: 1024, height: 900 },
   { name: 'desktop compacto', width: 1280, height: 800 },
@@ -80,6 +82,10 @@ for (const viewport of VIEWPORTS) {
     await carregarPrevisao(page)
     await expect(page.locator('.app-clima')).toBeVisible()
 
+    if (viewport.width < 640) {
+      await page.getByRole('button', { name: 'Abrir menu' }).click()
+    }
+
     const medidas = await page.evaluate(() => {
       const rect = selector => {
         const { x, y, width, height } = document.querySelector(selector).getBoundingClientRect()
@@ -88,6 +94,10 @@ for (const viewport of VIEWPORTS) {
       return {
         larguraDocumento: document.documentElement.scrollWidth,
         larguraViewport: window.innerWidth,
+        resumosCortados: [...document.querySelectorAll('.cabecalho__resumo')]
+          .filter(element => getComputedStyle(element).display !== 'none')
+          .filter(element => element.scrollWidth > element.clientWidth + 1)
+          .map(element => element.innerText),
         conteudo: rect('.conteudo-clima'),
         cabecalho: rect('.cabecalho'),
         cartao: rect('.cartao-clima'),
@@ -96,6 +106,7 @@ for (const viewport of VIEWPORTS) {
     })
 
     expect(medidas.larguraDocumento).toBeLessThanOrEqual(medidas.larguraViewport)
+    expect(medidas.resumosCortados).toEqual([])
     expect(Math.abs(medidas.cabecalho.width - medidas.conteudo.width)).toBeLessThanOrEqual(1)
     expect(medidas.cartao.x).toBeGreaterThanOrEqual(medidas.conteudo.x)
     expect(medidas.cartao.x + medidas.cartao.width).toBeLessThanOrEqual(
@@ -109,6 +120,90 @@ for (const viewport of VIEWPORTS) {
     expect(medidas.cartao.y + medidas.cartao.height).toBeLessThanOrEqual(medidas.previsao.y + 1)
   })
 }
+
+test('menu mobile abre, fecha com Esc e clique fora, e mantém resumos compactos', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+  await carregarPrevisao(page)
+
+  const menu = page.getByRole('button', { name: 'Abrir menu' })
+  const nav = page.getByRole('navigation', { name: 'Previsão do tempo' })
+  await expect(menu).toBeVisible()
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  await expect(nav).toBeHidden()
+
+  await menu.click()
+  await expect(page.getByRole('button', { name: 'Fechar menu' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  )
+  await expect(nav.getByRole('link')).toHaveCount(4)
+  await expect(nav.getByRole('link', { name: /15 dias/ })).toContainText('2 chuvosos')
+  await expect(nav.locator('.cabecalho__resumo--compacto').last()).toBeInViewport()
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.cabecalho__link')].every(link => {
+          const { width, height } = link.getBoundingClientRect()
+          return width >= 44 && height >= 44
+        }),
+      ),
+    )
+    .toBe(true)
+
+  await page.keyboard.press('Escape')
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  await expect(menu).toBeFocused()
+
+  await menu.click()
+  await page.locator('.cartao-clima').click({ position: { x: 10, y: 10 } })
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+})
+
+test('header se reorganiza em duas linhas no tablet e uma no desktop', async ({ page }) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await carregarPrevisao(page)
+  const tabletLayout = await page.evaluate(() => {
+    const brand = document.querySelector('.marca').getBoundingClientRect()
+    const search = document.querySelector('.busca-cidade').getBoundingClientRect()
+    const nav = document.querySelector('.cabecalho__navegacao').getBoundingClientRect()
+    const links = [...document.querySelectorAll('.cabecalho__link')].map(link =>
+      link.getBoundingClientRect(),
+    )
+    return {
+      firstRow: Math.abs(brand.top - search.top) < 30,
+      navigationBelow: nav.top > Math.max(brand.bottom, search.bottom),
+      linksInGrid: links.every((link, index) => index === 0 || link.left > links[index - 1].left),
+    }
+  })
+  expect(tabletLayout.firstRow).toBe(true)
+  expect(tabletLayout.navigationBelow).toBe(true)
+  expect(tabletLayout.linksInGrid).toBe(true)
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const desktopLayout = await page.evaluate(() => {
+    const header = document.querySelector('.cabecalho').getBoundingClientRect()
+    const brand = document.querySelector('.marca').getBoundingClientRect()
+    const navigation = document.querySelector('.cabecalho__navegacao-grupo').getBoundingClientRect()
+    const search = document.querySelector('.busca-cidade').getBoundingClientRect()
+    return {
+      headerHeight: header.height,
+      brandInsideHeader: brand.top >= header.top && brand.bottom <= header.bottom,
+      navigationInsideHeader: navigation.top >= header.top && navigation.bottom <= header.bottom,
+      searchInsideHeader: search.top >= header.top && search.bottom <= header.bottom,
+    }
+  })
+  expect(desktopLayout.headerHeight).toBeLessThan(140)
+  expect(desktopLayout.brandInsideHeader).toBe(true)
+  expect(desktopLayout.navigationInsideHeader).toBe(true)
+  expect(desktopLayout.searchInsideHeader).toBe(true)
+})
 
 test('contraste AA em todos os temas na TV', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 })
@@ -218,9 +313,9 @@ test('exibe resumos na navegação e rola até a seção selecionada', async ({ 
 
   await expect(agora).toContainText('20°')
   await expect(hoje).toContainText('15°/22°')
-  await expect(hoje).toContainText('25% chuva')
+  await expect(hoje).toContainText('25%')
   await expect(amanha).toContainText('16°/23°')
-  await expect(quinzeDias).toContainText('2 dias de chuva')
+  await expect(quinzeDias).toContainText('2 chuvosos')
   await expect(page.locator('#quinze-dias .cartao-dia')).toHaveCount(16)
   await expect(hoje).toHaveAttribute('href', '/hoje')
   await expect(amanha).toHaveAttribute('href', '/amanha')
