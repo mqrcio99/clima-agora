@@ -32,13 +32,13 @@ O **Clima Agora** consome dados em tempo real da API [Open-Meteo](https://open-m
 
 ## 🛠️ Stack
 
-| Camada | Tecnologia |
-| --- | --- |
-| Interface | React 19 |
-| Build e dev server | Vite 8 |
-| Linguagem | JavaScript |
-| Dados | API Open-Meteo |
-| Hospedagem | Vercel |
+| Camada             | Tecnologia     |
+| ------------------ | -------------- |
+| Interface          | React 19       |
+| Build e dev server | Vite 8         |
+| Linguagem          | JavaScript     |
+| Dados              | API Open-Meteo |
+| Hospedagem         | Vercel         |
 
 ## 🚀 Como rodar localmente
 
@@ -58,12 +58,12 @@ A aplicação ficará disponível em `http://localhost:5173`. Não é necessári
 
 ### Scripts disponíveis
 
-| Comando | O que faz |
-| --- | --- |
-| `npm run dev` | Inicia o servidor de desenvolvimento |
-| `npm run build` | Gera a build de produção |
-| `npm run check` | Executa as verificações do projeto |
-| `npm run test` | Executa os testes |
+| Comando         | O que faz                            |
+| --------------- | ------------------------------------ |
+| `npm run dev`   | Inicia o servidor de desenvolvimento |
+| `npm run build` | Gera a build de produção             |
+| `npm run check` | Executa as verificações do projeto   |
+| `npm run test`  | Executa os testes                    |
 
 ## 🧪 Playground
 
@@ -84,15 +84,25 @@ http://localhost:5173/?playground&debug=rain
 ## 📁 Estrutura principal
 
 ```text
-src/
-  app/          # composição e configuração da aplicação
-  components/   # componentes de interface
-  hooks/        # hooks reutilizáveis
-  playground/   # simulador de cenários climáticos
-  services/     # acesso à API Open-Meteo
-  styles/       # estilos e temas
-  utils/        # funções utilitárias
+.
+├── src/                  # aplicação web React/Vite
+│   ├── app/              # composição da aplicação
+│   ├── components/       # componentes, cada um em sua pasta
+│   ├── hooks/            # hooks reutilizáveis
+│   ├── playground/       # simulador de cenários climáticos
+│   ├── services/         # acesso à API Open-Meteo
+│   ├── styles/           # estilos e temas
+│   └── utils/             # utilitários e testes unitários
+├── e2e/                  # testes ponta a ponta da versão web
+├── mobile/               # aplicação Android React Native/Expo independente
+├── docs/                 # decisões e documentação do projeto
+└── test-results/         # resultados locais do Playwright (não versionados)
 ```
+
+Web e mobile têm dependências, comandos, fontes e testes próprios. Execute os comandos
+da versão web na raiz do repositório e os da versão Android dentro de `mobile/`.
+Os testes unitários web ficam junto dos utilitários em `src/utils/tests/`; os testes
+do app mobile ficam junto das áreas correspondentes em `mobile/src/**/__tests__/`.
 
 ## 🎯 Destaques técnicos
 

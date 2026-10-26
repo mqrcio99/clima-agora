@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --test",
+    "test": "node --test src/utils/tests/*.test.js",
     "test:e2e": "playwright test",
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.jsx --max-warnings=0",

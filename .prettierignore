@@ -1,4 +1,7 @@
 dist
 node_modules
+mobile/
+test-results/
+playwright-report/
 coverage
 *.min.js

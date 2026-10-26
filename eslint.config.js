@@ -6,7 +6,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'node_modules/**', 'mobile/**'],
   },
   js.configs.recommended,
   {
