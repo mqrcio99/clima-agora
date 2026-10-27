@@ -578,6 +578,11 @@ button {
   scroll-margin-top: 16px;
 }
 
+.ancora-clima {
+  min-width: 0;
+  width: 100%;
+}
+
 .secoes-previsao {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -599,6 +604,8 @@ a:focus-visible {
 
 .cartao-clima,
 .previsao {
+  min-width: 0;
+  width: 100%;
   border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
   border-radius: var(--radius-card);
   background: var(--card);
@@ -810,7 +817,6 @@ a:focus-visible {
 }
 
 .previsao {
-  min-width: 0;
   padding: clamp(14px, 3vw, 20px);
 }
 

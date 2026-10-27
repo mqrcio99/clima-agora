@@ -5,12 +5,16 @@ const VIEWPORTS = [
   { name: 'celular pequeno', width: 360, height: 800 },
   { name: 'celular', width: 390, height: 844 },
   { name: 'celular amplo', width: 430, height: 900 },
+  { name: 'limite mobile', width: 639, height: 900 },
+  { name: 'limite tablet', width: 640, height: 900 },
   { name: 'tablet', width: 768, height: 1024 },
+  { name: 'limite desktop', width: 1023, height: 900 },
   { name: 'tablet grande', width: 1024, height: 900 },
   { name: 'desktop compacto', width: 1280, height: 800 },
   { name: 'desktop', width: 1366, height: 768 },
   { name: 'desktop amplo', width: 1440, height: 900 },
   { name: 'desktop 1900', width: 1900, height: 1000 },
+  { name: 'limite TV', width: 1919, height: 1080 },
   { name: 'TV', width: 1920, height: 1080 },
 ]
 
@@ -136,6 +140,8 @@ for (const viewport of VIEWPORTS) {
     expect(medidas.previsao.x + medidas.previsao.width).toBeLessThanOrEqual(
       medidas.conteudo.x + medidas.conteudo.width,
     )
+    expect(Math.abs(medidas.cartao.x - medidas.previsao.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(medidas.cartao.width - medidas.previsao.width)).toBeLessThanOrEqual(1)
     expect(medidas.cabecalho.y + medidas.cabecalho.height).toBeLessThanOrEqual(medidas.cartao.y + 1)
     expect(medidas.cartao.y + medidas.cartao.height).toBeLessThanOrEqual(medidas.previsao.y + 1)
   })
