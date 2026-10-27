@@ -9,8 +9,6 @@
 
 🔗 **Demo ao vivo:** [clima-agora-olive.vercel.app](https://clima-agora-olive.vercel.app)
 
-🔗 **Versão Android:** [Clima Agora Mobile](mobile/README.md)
-
 ---
 
 ## 📌 Sobre o projeto
@@ -28,7 +26,6 @@ O **Clima Agora** consome dados em tempo real da API [Open-Meteo](https://open-m
 - 🧪 **Playground de desenvolvimento** para simular cenários climáticos
 - 🌐 **Compatibilidade** com navegadores recentes e suporte a navegadores mais antigos
 - 🌦️ **Previsão horária**, alertas locais e persistência do último local consultado
-- 📱 **Aplicativo Android Expo** em desenvolvimento na pasta [`mobile/`](mobile/)
 
 ## 🛠️ Stack
 
@@ -92,17 +89,14 @@ http://localhost:5173/?playground&debug=rain
 │   ├── playground/       # simulador de cenários climáticos
 │   ├── services/         # acesso à API Open-Meteo
 │   ├── styles/           # estilos e temas
-│   └── utils/             # utilitários e testes unitários
-├── e2e/                  # testes ponta a ponta da versão web
-├── mobile/               # aplicação Android React Native/Expo independente
-├── docs/                 # decisões e documentação do projeto
-└── test-results/         # resultados locais do Playwright (não versionados)
+│   └── utils/            # utilitários e testes unitários
+├── e2e/                  # testes ponta a ponta
+└── docs/                 # documentação da versão web
 ```
 
-Web e mobile têm dependências, comandos, fontes e testes próprios. Execute os comandos
-da versão web na raiz do repositório e os da versão Android dentro de `mobile/`.
-Os testes unitários web ficam junto dos utilitários em `src/utils/tests/`; os testes
-do app mobile ficam junto das áreas correspondentes em `mobile/src/**/__tests__/`.
+O repositório contém somente a aplicação web. Execute os comandos na raiz; os testes
+unitários ficam junto dos utilitários em `src/utils/tests/` e os testes ponta a ponta
+em `e2e/`. Os resultados locais do Playwright não são versionados.
 
 ## 🎯 Destaques técnicos
 
@@ -116,8 +110,6 @@ do app mobile ficam junto das áreas correspondentes em `mobile/src/**/__tests__
 ## 📝 Observações
 
 O projeto foi desenvolvido para apresentação acadêmica e demonstração de boas práticas em responsividade, UX e compatibilidade entre diferentes dispositivos.
-
-O aplicativo mobile é uma implementação separada em React Native/Expo. Consulte [`mobile/README.md`](mobile/README.md) para instruções, estado do APK e decisões específicas da versão Android.
 
 ## 👤 Autor
 
