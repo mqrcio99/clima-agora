@@ -6,6 +6,15 @@ function getMaximumPrecipitationChance(hourly = {}) {
   return chanceValues.reduce((highest, value) => Math.max(highest, Number(value ?? 0)), 0)
 }
 
+function safeNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
 export function getWeatherAlerts(data = {}) {
   const alerts = []
   const current = data.current ?? {}
@@ -45,9 +54,9 @@ export function getWeatherAlerts(data = {}) {
     })
   }
 
-  const windSpeed = Number(current.wind_speed_10m ?? 0)
-  const windGust = Number(current.wind_gusts_10m ?? 0)
-  if (windSpeed >= 40 || windGust >= 50) {
+  const windSpeed = safeNumber(current.wind_speed_10m)
+  const windGust = safeNumber(current.wind_gusts_10m)
+  if ((windSpeed !== null && windSpeed >= 40) || (windGust !== null && windGust >= 50)) {
     alerts.push({
       key: 'wind',
       severity: 'atenção',
@@ -57,10 +66,10 @@ export function getWeatherAlerts(data = {}) {
     })
   }
 
-  const temperature = Number(current.temperature_2m ?? 0)
-  const uvIndex = Number(current.uv_index ?? daily?.uv_index_max?.[0] ?? 0)
+  const temperature = safeNumber(current.temperature_2m)
+  const uvIndex = safeNumber(current.uv_index ?? daily?.uv_index_max?.[0])
 
-  if (temperature >= 32) {
+  if (temperature !== null && temperature >= 32) {
     alerts.push({
       key: 'heat',
       severity: 'alerta',
@@ -70,7 +79,7 @@ export function getWeatherAlerts(data = {}) {
     })
   }
 
-  if (temperature <= 5) {
+  if (temperature !== null && temperature <= 5) {
     alerts.push({
       key: 'cold',
       severity: 'atenção',
@@ -80,7 +89,7 @@ export function getWeatherAlerts(data = {}) {
     })
   }
 
-  if (uvIndex >= 7) {
+  if (uvIndex !== null && uvIndex >= 7) {
     alerts.push({
       key: 'uv',
       severity: 'atenção',

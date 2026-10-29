@@ -25,3 +25,7 @@ test('gera alertas para chuva, vento, calor e uv alto', () => {
   assert.ok(alerts.some(item => item.key === 'heat'))
   assert.ok(alerts.some(item => item.key === 'uv'))
 })
+
+test('não gera alertas de temperatura, vento ou UV para dados ausentes', () => {
+  assert.deepEqual(getWeatherAlerts({ current: {} }), [])
+})

@@ -1,7 +1,11 @@
 {
-  "name": "app",
+  "name": "clima-agora",
   "private": true,
   "version": "1.0.0",
+  "description": "Aplicativo de previsão do tempo em português do Brasil.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -21,9 +21,18 @@ const CONDITION_LABELS = {
   storm: 'Tempestade',
 }
 
+function formatMetric(value) {
+  if (value === null || value === undefined || value === '') {
+    return '—'
+  }
+
+  const number = Number(value)
+  return Number.isFinite(number) ? `${Math.round(number)}°` : '—'
+}
+
 export function Forecast({ data }) {
   const days = data?.daily
-  const hourly = getHourlyForecastOverview(data?.hourly ?? {})
+  const hourly = getHourlyForecastOverview(data?.hourly ?? {}, { timezone: data?.timezone })
   const rainRisk = getRainRiskLevel(hourly)
 
   if (!days) return null
@@ -45,8 +54,8 @@ export function Forecast({ data }) {
                   {CONDITION_LABELS[item.condition] || 'Clima'}
                 </small>
                 <div>
-                  <b>{Math.round(item.temperature)}°</b>
-                  <small>{item.chance}%</small>
+                  <b>{formatMetric(item.temperature)}</b>
+                  <small>{item.chance === null ? '—' : `${item.chance}%`}</small>
                 </div>
               </article>
             ))}
@@ -55,11 +64,11 @@ export function Forecast({ data }) {
       )}
 
       <div className="previsao__cabecalho">
-        <h2>Próximos 5 dias</h2>
-        <span>Previsão diária</span>
+        <h2>Hoje e os próximos 15 dias</h2>
+        <span>16 dias, incluindo hoje</span>
       </div>
       <div className="previsao__lista">
-        {days.time.slice(0, 5).map((date, index) => {
+        {days.time.slice(0, 16).map((date, index) => {
           const day = new Date(`${date}T12:00:00`)
           const formatter =
             typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function'
@@ -83,8 +92,8 @@ export function Forecast({ data }) {
               <strong>{ICONS[condition]}</strong>
               <small className="cartao-dia__label">{CONDITION_LABELS[condition]}</small>
               <div>
-                <b>{Math.round(days.temperature_2m_max[index])}°</b>
-                <small>{Math.round(days.temperature_2m_min[index])}°</small>
+                <b>{formatMetric(days.temperature_2m_max[index])}</b>
+                <small>{formatMetric(days.temperature_2m_min[index])}</small>
               </div>
             </article>
           )

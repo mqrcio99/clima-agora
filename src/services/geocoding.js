@@ -1,11 +1,16 @@
-export async function searchCoordinates(city) {
+import { fetchWithTimeout } from './http.js'
+
+export async function searchCoordinates(city, { timeoutMs } = {}) {
   const params = new URLSearchParams({
     name: city,
     language: 'pt',
     count: '1',
   })
 
-  const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`)
+  const response = await fetchWithTimeout(
+    `https://geocoding-api.open-meteo.com/v1/search?${params}`,
+    { timeoutMs },
+  )
 
   if (!response.ok) {
     throw new Error(`Não foi possível consultar a API (${response.status})`)
@@ -25,14 +30,17 @@ export async function searchCoordinates(city) {
   }
 }
 
-export async function getCityFromCoordinates(latitude, longitude) {
+export async function getCityFromCoordinates(latitude, longitude, { timeoutMs } = {}) {
   const params = new URLSearchParams({
     latitude: String(latitude),
     longitude: String(longitude),
     localityLanguage: 'pt',
   })
 
-  const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${params}`)
+  const response = await fetchWithTimeout(
+    `https://api.bigdatacloud.net/data/reverse-geocode-client?${params}`,
+    { timeoutMs },
+  )
 
   if (!response.ok) {
     throw new Error(`Não foi possível consultar a API (${response.status})`)

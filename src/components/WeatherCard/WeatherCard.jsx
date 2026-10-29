@@ -20,14 +20,28 @@ const CONDITION_LABELS = {
   storm: 'Tempestade',
 }
 
-function safeNumber(value, fallback = 0) {
+function safeNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
   const number = Number(value)
-  return Number.isFinite(number) ? number : fallback
+  return Number.isFinite(number) ? number : null
 }
 
-function formatTime(value) {
+function formatMetric(value, unit = '') {
+  const number = safeNumber(value)
+  return number === null ? '—' : `${Math.round(number)}${unit}`
+}
+
+function formatTime(value, timezone) {
   if (!value) {
     return '—'
+  }
+
+  const localTime = value.match(/T(\d{2}:\d{2})/)
+  if (localTime) {
+    return localTime[1]
   }
 
   const date = new Date(value)
@@ -37,6 +51,7 @@ function formatTime(value) {
   }
 
   return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: timezone,
     hour: '2-digit',
     minute: '2-digit',
   }).format(date)
@@ -46,6 +61,11 @@ export function WeatherCard({ data, loading, error, condition }) {
   const current = data?.current
   const daily = data?.daily
   const alerts = getWeatherAlerts(data ?? {})
+  const orderedAlerts = [...alerts].sort(
+    (first, second) =>
+      (first.severity === 'alerta' ? 0 : 1) - (second.severity === 'alerta' ? 0 : 1),
+  )
+  const hasImportantAlert = orderedAlerts.some(alert => alert.severity === 'alerta')
 
   if (loading) {
     return (
@@ -71,8 +91,6 @@ export function WeatherCard({ data, loading, error, condition }) {
     return null
   }
 
-  const selectedAlert = alerts[0]
-
   return (
     <section className="cartao-clima" aria-label={`Previsão do tempo para ${data.city}`}>
       <div className="cartao-clima__cabecalho">
@@ -85,64 +103,78 @@ export function WeatherCard({ data, loading, error, condition }) {
         </span>
       </div>
 
-      {selectedAlert && (
-        <div className="alert-banner" role="status" aria-live="polite">
-          <span className="alert-banner__icon" aria-hidden="true">
-            {selectedAlert.icon}
-          </span>
-          <div>
-            <strong>{selectedAlert.title}</strong>
-            <small>{selectedAlert.description}</small>
-          </div>
+      {orderedAlerts.length > 0 && (
+        <div
+          className="alert-banner"
+          role={hasImportantAlert ? 'alert' : 'status'}
+          aria-live={hasImportantAlert ? 'assertive' : 'polite'}
+        >
+          <ul className="alert-banner__list">
+            {orderedAlerts.map(alert => (
+              <li key={alert.key}>
+                <span className="alert-banner__icon" aria-hidden="true">
+                  {alert.icon}
+                </span>
+                <div>
+                  <strong>{alert.title}</strong>
+                  <small>{alert.description}</small>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
       <div className="linha-temperatura" aria-live="polite">
         <div>
-          <strong>{Math.round(safeNumber(current.temperature_2m))}°</strong>
+          <strong>{formatMetric(current.temperature_2m, '°')}</strong>
           <span>{CONDITION_LABELS[condition] || 'Clima'}</span>
         </div>
         <p>
-          Sensação <b>{Math.round(safeNumber(current.apparent_temperature))}°</b>
+          Sensação <b>{formatMetric(current.apparent_temperature, '°')}</b>
         </p>
       </div>
 
       <div className="grade-metricas">
         <div>
           <span>Umidade</span>
-          <strong>{Math.round(safeNumber(current.relative_humidity_2m))}%</strong>
+          <strong>{formatMetric(current.relative_humidity_2m, '%')}</strong>
         </div>
         <div>
           <span>Vento</span>
-          <strong>{Math.round(safeNumber(current.wind_speed_10m))} km/h</strong>
+          <strong>
+            {safeNumber(current.wind_speed_10m) === null
+              ? '—'
+              : `${Math.round(safeNumber(current.wind_speed_10m))} km/h`}
+          </strong>
         </div>
         <div>
-          <span>Minima</span>
-          <strong>{Math.round(safeNumber(daily?.temperature_2m_min?.[0]))}°</strong>
+          <span>Mínima</span>
+          <strong>{formatMetric(daily?.temperature_2m_min?.[0], '°')}</strong>
         </div>
         <div>
           <span>Máxima</span>
-          <strong>{Math.round(safeNumber(daily?.temperature_2m_max?.[0]))}°</strong>
+          <strong>{formatMetric(daily?.temperature_2m_max?.[0], '°')}</strong>
         </div>
         <div>
           <span>Nascer</span>
-          <strong>{formatTime(daily?.sunrise?.[0])}</strong>
+          <strong>{formatTime(daily?.sunrise?.[0], data.timezone)}</strong>
         </div>
         <div>
           <span>Pôr do sol</span>
-          <strong>{formatTime(daily?.sunset?.[0])}</strong>
+          <strong>{formatTime(daily?.sunset?.[0], data.timezone)}</strong>
         </div>
         <div>
           <span>UV</span>
-          <strong>{Math.round(safeNumber(current.uv_index ?? daily?.uv_index_max?.[0]))}</strong>
+          <strong>{formatMetric(current.uv_index ?? daily?.uv_index_max?.[0])}</strong>
         </div>
         <div>
           <span>Chuva</span>
-          <strong>{Math.round(safeNumber(daily?.precipitation_probability_max?.[0]))}%</strong>
+          <strong>{formatMetric(daily?.precipitation_probability_max?.[0], '%')}</strong>
         </div>
       </div>
 
-      {selectedAlert && (
+      {orderedAlerts.length > 0 && (
         <p className="alert-banner__note">
           Avisos calculados localmente e não substituem alertas oficiais.
         </p>
