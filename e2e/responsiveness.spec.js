@@ -166,7 +166,8 @@ test('menu mobile abre, fecha com Esc e clique fora, e mantém resumos compactos
     'aria-expanded',
     'true',
   )
-  await expect(nav.getByRole('link')).toHaveCount(4)
+  await expect(nav.getByRole('link')).toHaveCount(2)
+  await expect(nav.getByRole('link', { name: /Hoje|Amanhã/ })).toHaveCount(0)
   await expect(nav.getByRole('link', { name: /16 dias/ })).toContainText('2 chuvosos')
   await expect(nav.locator('.cabecalho__resumo--compacto').last()).toBeInViewport()
   await expect
@@ -208,7 +209,7 @@ test('controles essenciais ficam acessíveis nas larguras mobile, tablet e deskt
     const navLinks = navigation.getByRole('link')
     await expect(page.locator('.marca')).toBeVisible()
     await expect(page.locator('.busca-cidade')).toBeVisible()
-    await expect(navLinks).toHaveCount(4)
+    await expect(navLinks).toHaveCount(2)
     await expect(page.locator('.cartao-clima')).toBeVisible()
 
     const viewportBounds = await page.evaluate(() => {
@@ -237,10 +238,7 @@ test('controles essenciais ficam acessíveis nas larguras mobile, tablet e deskt
     expect(viewportBounds.cardIntersectsViewport, `${width}px`).toBe(true)
 
     if (width < 640) {
-      expect(
-        viewportBounds.navIsScrollable,
-        `${width}px: navegação deve rolar horizontalmente`,
-      ).toBe(true)
+      expect(viewportBounds.navIsScrollable, `${width}px: navegação sem rolagem extra`).toBe(false)
       for (const link of await navLinks.all()) {
         await link.scrollIntoViewIfNeeded()
         const isInsideViewport = await link.evaluate(element => {
@@ -677,28 +675,22 @@ test('exibe resumos na navegação e rola até a seção selecionada', async ({ 
   await carregarPrevisao(page)
 
   const agora = page.getByRole('link', { name: /Agora/ })
-  const hoje = page.getByRole('link', { name: /Hoje/ })
-  const amanha = page.getByRole('link', { name: /Amanhã/ })
   const quinzeDias = page.getByRole('link', { name: /16 dias/ })
 
   await expect(agora).toContainText('20°')
-  await expect(hoje).toContainText('15°/22°')
-  await expect(hoje).toContainText('25%')
-  await expect(amanha).toContainText('16°/23°')
   await expect(quinzeDias).toContainText('2 chuvosos')
+  await expect(
+    page.getByRole('navigation', { name: 'Previsão do tempo' }).getByRole('link'),
+  ).toHaveCount(2)
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Previsão do tempo' })
+      .getByRole('link', { name: /Hoje|Amanhã/ }),
+  ).toHaveCount(0)
+  await expect(page.locator('#hoje, #amanha')).toHaveCount(0)
   await expect(page.locator('#quinze-dias .cartao-dia')).toHaveCount(16)
-  await expect(hoje).toHaveAttribute('href', '#hoje')
-  await expect(amanha).toHaveAttribute('href', '#amanha')
   await expect(quinzeDias).toHaveAttribute('href', '#quinze-dias')
   await expect(agora).toHaveAttribute('href', '#agora')
-
-  await hoje.click()
-  await expect
-    .poll(() =>
-      page.locator('#hoje').evaluate(element => Math.abs(element.getBoundingClientRect().top)),
-    )
-    .toBeLessThan(20)
-  await expect(page).toHaveURL(/#hoje$/)
 
   await quinzeDias.click()
   await expect(page).toHaveURL(/#quinze-dias$/)
@@ -711,22 +703,15 @@ test('exibe resumos na navegação e rola até a seção selecionada', async ({ 
     .toBeLessThan(20)
 
   await page.goBack()
-  await expect(page).toHaveURL(/#hoje$/)
-
-  await page.goto('/#amanha')
-  await expect(page).toHaveURL(/#amanha$/)
-  await expect
-    .poll(() =>
-      page.locator('#amanha').evaluate(element => Math.abs(element.getBoundingClientRect().top)),
-    )
-    .toBeLessThan(20)
+  await expect(page).toHaveURL(/debug=cloudy/)
+  await expect(page).not.toHaveURL(/#/)
 
   const navigationHeights = await page
     .locator('.cabecalho__link')
     .evaluateAll(links => links.map(link => getComputedStyle(link).height))
   expect(new Set(navigationHeights).size).toBe(1)
 
-  const summaryContrasts = await hoje.evaluate(link => {
+  const summaryContrasts = await quinzeDias.evaluate(link => {
     const themes = [
       'clear',
       'rain',
@@ -789,7 +774,7 @@ test('hover destaca a navegação e respeita movimento reduzido', async ({ page 
   await simularPrevisao(page)
   await carregarPrevisao(page)
 
-  const link = page.getByRole('link', { name: /Hoje/ })
+  const link = page.getByRole('link', { name: /16 dias/ })
   await link.hover()
   await expect
     .poll(() => link.evaluate(element => getComputedStyle(element).transform))

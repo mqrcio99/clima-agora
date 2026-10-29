@@ -132,15 +132,6 @@ export default function App() {
           </div>
 
           <div className="secoes-previsao">
-            <Forecast data={data} id="hoje" title="Hoje" daysToShow={1} showHourly={false} />
-            <Forecast
-              data={data}
-              id="amanha"
-              title="Amanhã"
-              startIndex={1}
-              daysToShow={1}
-              showHourly={false}
-            />
             <Forecast
               data={data}
               id="quinze-dias"
