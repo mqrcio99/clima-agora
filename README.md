@@ -22,6 +22,7 @@ O **Clima Agora** consome dados em tempo real da API [Open-Meteo](https://open-m
 - 💾 **Armazenamento do último local consultado**
 - 📅 **Previsão dos próximos 5 dias**
 - 🎨 **Tema visual dinâmico** por condição meteorológica
+- ✨ **Fundos interativos**: o sol pulsa, a chuva solta um raio e a neve forma um cubo de gelo ao clicar
 - 📺 **Modo TV** para telas grandes
 - 🧪 **Playground de desenvolvimento** para simular cenários climáticos
 - 🌐 **Compatibilidade** com navegadores recentes e suporte a navegadores mais antigos

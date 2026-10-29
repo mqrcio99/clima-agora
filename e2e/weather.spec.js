@@ -45,7 +45,7 @@ function createForecast({ missingValues = false, alerts = false, hourlyTimes = [
   }
 }
 
-async function openWeatherApp(page, forecastOptions, clockTime) {
+async function openWeatherApp(page, forecastOptions, clockTime, condition = 'clear') {
   await page.addInitScript(({ key, city }) => localStorage.setItem(key, city), {
     key: CITY_KEY,
     city: 'São Paulo',
@@ -61,7 +61,7 @@ async function openWeatherApp(page, forecastOptions, clockTime) {
   if (clockTime) {
     await page.clock.install({ time: clockTime })
   }
-  await page.goto('/')
+  await page.goto(`/?debug=${condition}`)
   await expect(page.getByRole('heading', { name: 'São Paulo' })).toBeVisible()
 }
 
@@ -70,6 +70,24 @@ test('mostra hoje e os próximos 15 dias', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Hoje e os próximos 15 dias' })).toBeVisible()
   await expect(page.locator('.previsao__lista').last().locator('.cartao-dia')).toHaveCount(16)
+})
+
+test('anima o fundo quando clicado conforme a condição do tempo', async ({ page }) => {
+  const background = page.locator('.weather-background')
+
+  await openWeatherApp(page, {}, undefined, 'clear')
+  await page.locator('.cartao-clima').click({ position: { x: 10, y: 10 } })
+  await expect(background).not.toHaveAttribute('data-effect', 'sun')
+  await page.locator('.app-clima').click({ position: { x: 8, y: 8 } })
+  await expect(background).toHaveAttribute('data-effect', 'sun')
+
+  await openWeatherApp(page, {}, undefined, 'rain')
+  await page.locator('.app-clima').click({ position: { x: 8, y: 8 } })
+  await expect(background).toHaveAttribute('data-effect', 'lightning')
+
+  await openWeatherApp(page, {}, undefined, 'snow')
+  await page.locator('.app-clima').click({ position: { x: 8, y: 8 } })
+  await expect(background).toHaveAttribute('data-effect', 'ice')
 })
 
 test('usa o fuso retornado pela API para selecionar a próxima hora', async ({ page }) => {
