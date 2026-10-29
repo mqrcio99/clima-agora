@@ -1,16 +1,29 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { CitySearch } from '../components/CitySearch'
+import { Header } from '../components/Header/Header.jsx'
 import { Forecast } from '../components/Forecast/Forecast.jsx'
 import { LocationTransition } from '../components/LocationTransition'
 import { WeatherBackground } from '../components/WeatherBackground'
 import { WeatherCard } from '../components/WeatherCard/WeatherCard.jsx'
+import { NAV_ITEMS } from './navItems.js'
 import { useWeather } from '../hooks/useWeather'
 import { getStoredCity, setStoredCity } from '../utils/storage'
 import { getWeatherCondition } from '../utils/weatherCondition'
+import { getWeatherSummary } from '../utils/weatherSummary.js'
 import '../styles/tokens.css'
 import '../styles/themes.css'
 
-const DEBUG_CONDITIONS = ['clear', 'rain', 'snow', 'cloudy', 'night', 'storm', 'cold']
+const DEBUG_CONDITIONS = [
+  'clear',
+  'rain',
+  'snow',
+  'cloudy',
+  'night',
+  'storm',
+  'cold',
+  'heat',
+  'wind',
+  'uv',
+]
 
 function getDebugCondition() {
   const params = new URLSearchParams(window.location.search)
@@ -34,7 +47,9 @@ export default function App() {
 
     return tvAgent || largeScreen ? 'tv' : 'normal'
   })
-  const { data, loading, error } = useWeather({ city })
+  const { data, loading, error, locationDenied } = useWeather({ city })
+  const resumo = getWeatherSummary(data)
+  const displayedCity = city && loading ? city : data?.city || city || 'Local padrão'
 
   const handleSearch = nextCity => {
     const normalized = nextCity.trim()
@@ -60,6 +75,15 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!data || !window.location.hash) {
+      return
+    }
+
+    const targetId = decodeURIComponent(window.location.hash.slice(1))
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [data])
+
   const condition =
     debugCondition && DEBUG_CONDITIONS.includes(debugCondition)
       ? debugCondition
@@ -84,28 +108,46 @@ export default function App() {
       <main className="app-clima" data-theme={condition} data-device={device}>
         <WeatherBackground condition={condition} />
         <div className="conteudo-clima">
-          <header className="cabecalho">
-            <div className="marca">
-              <span className="marca__icone" aria-hidden="true">
-                ☀
-              </span>
-              <span>Clima Agora</span>
-            </div>
-            <CitySearch
-              value={cityInput}
-              onChange={setCityInput}
-              onSearch={handleSearch}
-              disabled={loading}
-            />
-          </header>
+          <Header
+            items={NAV_ITEMS}
+            resumo={resumo}
+            loading={loading}
+            error={Boolean(error)}
+            city={displayedCity}
+            locationDenied={locationDenied}
+            cityInput={cityInput}
+            onCityChange={setCityInput}
+            onSearch={handleSearch}
+          />
 
           <div className="grade-clima">
-            {loading && !data ? (
-              <LocationTransition />
-            ) : (
-              <WeatherCard data={data} loading={loading} error={error} condition={condition} />
-            )}
+            <div id="agora" className="ancora-clima">
+              {loading && !data ? (
+                <LocationTransition />
+              ) : (
+                <WeatherCard data={data} loading={loading} error={error} condition={condition} />
+              )}
+            </div>
             <Forecast data={data} />
+          </div>
+
+          <div className="secoes-previsao">
+            <Forecast data={data} id="hoje" title="Hoje" daysToShow={1} showHourly={false} />
+            <Forecast
+              data={data}
+              id="amanha"
+              title="Amanhã"
+              startIndex={1}
+              daysToShow={1}
+              showHourly={false}
+            />
+            <Forecast
+              data={data}
+              id="quinze-dias"
+              title="Hoje e os próximos 15 dias"
+              daysToShow={16}
+              showHourly={false}
+            />
           </div>
 
           {error && data && (

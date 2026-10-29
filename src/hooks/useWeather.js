@@ -11,6 +11,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
   const [error, setError] = useState('')
   const [condition, setCondition] = useState(null)
   const requestId = useRef(0)
+  const [locationDenied, setLocationDenied] = useState(false)
 
   const loadWeather = useCallback(async (latitude, longitude, cityName, isCurrent) => {
     try {
@@ -34,6 +35,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
         }),
       )
       setError('')
+      setLocationDenied(false)
     } catch (requestError) {
       if (isCurrent()) {
         setError(
@@ -58,6 +60,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
     const start = async () => {
       setLoading(true)
       setError('')
+      setLocationDenied(false)
 
       try {
         if (requestedCity.trim()) {
@@ -78,12 +81,18 @@ export function useWeather({ city: requestedCity = '' } = {}) {
           navigator.geolocation.getCurrentPosition(
             position => {
               if (isCurrent()) {
-                loadWeather(position.coords.latitude, position.coords.longitude, undefined, isCurrent)
+                loadWeather(
+                  position.coords.latitude,
+                  position.coords.longitude,
+                  undefined,
+                  isCurrent,
+                )
               }
             },
             permissionError => {
               if (isCurrent()) {
                 setLoading(false)
+                setLocationDenied(permissionError.code === permissionError.PERMISSION_DENIED)
                 setError(
                   permissionError.code === permissionError.PERMISSION_DENIED
                     ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
@@ -132,5 +141,5 @@ export function useWeather({ city: requestedCity = '' } = {}) {
     }
   }, [requestedCity, loadWeather])
 
-  return { data, loading, error, condition }
+  return { data, loading, error, condition, locationDenied }
 }

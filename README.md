@@ -7,20 +7,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Open-Meteo](https://img.shields.io/badge/API-Open--Meteo-1E88E5)](https://open-meteo.com)
 
-<<<<<<< HEAD
 🔗 **Demo ao vivo:** [clima-agora-olive.vercel.app](https://clima-agora-olive.vercel.app)
-=======
-- Busca por cidade
-- Geolocalização com fallback seguro
-- Armazenamento do último local consultado
-- Previsão horária dos próximos horários
-- Previsão dos próximos 5 dias
-- Alertas calculados com base na previsão local
-- Tema visual dinâmico por condição meteorológica
-- Modo de TV e telas grandes
-- Playground de desenvolvimento para simular cenários climáticos, incluindo chuva, calor e UV
-- Compatibilidade com navegadores recentes e suporte para navegadores mais antigos
->>>>>>> 87dc11d (1.1)
 
 ---
 
@@ -38,16 +25,17 @@ O **Clima Agora** consome dados em tempo real da API [Open-Meteo](https://open-m
 - 📺 **Modo TV** para telas grandes
 - 🧪 **Playground de desenvolvimento** para simular cenários climáticos
 - 🌐 **Compatibilidade** com navegadores recentes e suporte a navegadores mais antigos
+- 🌦️ **Previsão horária**, alertas locais e persistência do último local consultado
 
 ## 🛠️ Stack
 
-| Camada | Tecnologia |
-| --- | --- |
-| Interface | React 19 |
-| Build e dev server | Vite 8 |
-| Linguagem | JavaScript |
-| Dados | API Open-Meteo |
-| Hospedagem | Vercel |
+| Camada             | Tecnologia     |
+| ------------------ | -------------- |
+| Interface          | React 19       |
+| Build e dev server | Vite 8         |
+| Linguagem          | JavaScript     |
+| Dados              | API Open-Meteo |
+| Hospedagem         | Vercel         |
 
 ## 🚀 Como rodar localmente
 
@@ -67,12 +55,12 @@ A aplicação ficará disponível em `http://localhost:5173`. Não é necessári
 
 ### Scripts disponíveis
 
-| Comando | O que faz |
-| --- | --- |
-| `npm run dev` | Inicia o servidor de desenvolvimento |
-| `npm run build` | Gera a build de produção |
-| `npm run check` | Executa as verificações do projeto |
-| `npm run test` | Executa os testes |
+| Comando         | O que faz                            |
+| --------------- | ------------------------------------ |
+| `npm run dev`   | Inicia o servidor de desenvolvimento |
+| `npm run build` | Gera a build de produção             |
+| `npm run check` | Executa as verificações do projeto   |
+| `npm run test`  | Executa os testes                    |
 
 ## 🧪 Playground
 
@@ -93,15 +81,22 @@ http://localhost:5173/?playground&debug=rain
 ## 📁 Estrutura principal
 
 ```text
-src/
-  app/          # composição e configuração da aplicação
-  components/   # componentes de interface
-  hooks/        # hooks reutilizáveis
-  playground/   # simulador de cenários climáticos
-  services/     # acesso à API Open-Meteo
-  styles/       # estilos e temas
-  utils/        # funções utilitárias
+.
+├── src/                  # aplicação web React/Vite
+│   ├── app/              # composição da aplicação
+│   ├── components/       # componentes, cada um em sua pasta
+│   ├── hooks/            # hooks reutilizáveis
+│   ├── playground/       # simulador de cenários climáticos
+│   ├── services/         # acesso à API Open-Meteo
+│   ├── styles/           # estilos e temas
+│   └── utils/            # utilitários e testes unitários
+├── e2e/                  # testes ponta a ponta
+└── docs/                 # documentação da versão web
 ```
+
+O repositório contém somente a aplicação web. Execute os comandos na raiz; os testes
+unitários ficam junto dos utilitários em `src/utils/tests/` e os testes ponta a ponta
+em `e2e/`. Os resultados locais do Playwright não são versionados.
 
 ## 🎯 Destaques técnicos
 
@@ -121,4 +116,3 @@ O projeto foi desenvolvido para apresentação acadêmica e demonstração de bo
 **Marcio Oliveira**
 
 ---
-

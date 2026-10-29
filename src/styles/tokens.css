@@ -5,8 +5,8 @@
   --font-size-label: 0.78rem;
   --font-size-sm: 0.72rem;
   --font-size-md: 1rem;
-  --font-size-lg: clamp(1.7rem, 5vw, 2.6rem);
-  --font-size-hero: clamp(5rem, 20vw, 8rem);
+  --font-size-lg: clamp(1.5rem, 5vw, 2.6rem);
+  --font-size-hero: clamp(4rem, 18vw, 8rem);
   --radius-card: 28px;
   --radius-pill: 14px;
   --shadow-card: 0 20px 60px rgba(25, 45, 70, 0.16);
@@ -32,4 +32,5 @@
   --breakpoint-desktop: 1024px;
   --breakpoint-tv: 1920px;
   --touch-target: 44px;
+  --page-gutter: clamp(12px, 2.2vw, 24px);
 }

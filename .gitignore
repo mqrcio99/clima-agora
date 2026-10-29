@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+/test-results/
+/playwright-report/
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +24,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Credentials and local environment
+**/.env*
+!**/.env.example
+**/credentials.json
+**/*.keystore
+**/*.jks
+**/*.p12
