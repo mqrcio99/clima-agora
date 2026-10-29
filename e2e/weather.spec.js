@@ -76,6 +76,8 @@ test('anima o fundo quando clicado conforme a condição do tempo', async ({ pag
   const background = page.locator('.weather-background')
 
   await openWeatherApp(page, {}, undefined, 'clear')
+  await expect(page.locator('.cartao-clima')).toHaveCSS('cursor', 'default')
+  await expect(page.locator('.cartao-dia').first()).toHaveCSS('cursor', 'default')
   await page.locator('.cartao-clima').click({ position: { x: 10, y: 10 } })
   await expect(background).not.toHaveAttribute('data-effect', 'sun')
   await page.locator('.app-clima').click({ position: { x: 8, y: 8 } })
