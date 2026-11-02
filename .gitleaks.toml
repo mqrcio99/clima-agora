@@ -1,0 +1,12 @@
+title = "Clima Agora - secret scan"
+
+[allowlist]
+  description = "Ignore generated artifacts and local config placeholders."
+  paths = [
+    '''^package-lock.json$''',
+    '''^dist/''',
+    '''^node_modules/''',
+    '''^docs/''',
+    '''^.env.example$''',
+    '''^\.git/'''
+  ]

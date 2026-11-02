@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks not installed. Install it before committing, or run the CI scan manually."
+  exit 1
+fi
+
+gitleaks detect --no-banner --redact --source . --no-git --log-level info
