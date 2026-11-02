@@ -4,7 +4,9 @@ import { Forecast } from './components/Forecast/Forecast.jsx'
 import { LocationTransition } from './components/LocationTransition'
 import { WeatherBackground } from './components/WeatherBackground'
 import { WeatherCard } from './components/WeatherCard/WeatherCard.jsx'
+import { useAuth } from './hooks/useAuth'
 import { useWeather } from './hooks/useWeather'
+import { isSupabaseConfigured, signInWithSocial } from './services/supabase'
 import { getStoredCity, setStoredCity } from './utils/storage'
 import { getWeatherCondition } from './utils/weatherCondition'
 import './styles/tokens.css'
@@ -46,12 +48,25 @@ export default function App() {
     return isTVDevice || isLargeScreen ? 'tv' : 'normal'
   })
   const { data, loading, error } = useWeather({ city })
+  const { session, loading: authLoading, error: authError, signOut } = useAuth()
 
   const handleSearch = nextCity => {
     const normalized = nextCity.trim()
     setCity(normalized)
     setCityInput(normalized)
     setStoredCity(normalized)
+  }
+
+  const handleSocialLogin = async () => {
+    const response = await signInWithSocial('google')
+
+    if (response?.error) {
+      console.error(response.error)
+    }
+  }
+
+  const handleLogout = async () => {
+    await signOut()
   }
 
   useEffect(() => {
@@ -98,6 +113,23 @@ export default function App() {
             onSearch={handleSearch}
             disabled={loading}
           />
+          {isSupabaseConfigured() && (
+            <div className="auth-actions">
+              {session?.user ? (
+                <>
+                  <span className="auth-user">{session.user.email || 'Usuário autenticado'}</span>
+                  <button type="button" onClick={handleLogout} disabled={authLoading}>
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <button type="button" onClick={handleSocialLogin} disabled={authLoading}>
+                  Entrar com Google
+                </button>
+              )}
+              {authError && <span className="auth-error">{authError}</span>}
+            </div>
+          )}
         </header>
 
         <div className="grade-clima">
