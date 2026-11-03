@@ -288,6 +288,110 @@ button {
   padding: 0;
 }
 
+.app-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.app-navigation__link {
+  display: grid;
+  min-width: 0;
+  min-height: var(--touch-target);
+  flex: 1 1 120px;
+  place-items: center;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.app-navigation__link--active {
+  border-color: color-mix(in srgb, var(--text) 18%, transparent);
+  background: var(--card);
+}
+
+.app-route {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  max-width: 760px;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius: 18px;
+  color: var(--text);
+  background: var(--card);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.app-route h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  line-height: 1.2;
+}
+
+.app-route__empty,
+.app-route__content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.app-route__content {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+
+.app-route__action {
+  display: inline-grid;
+  min-height: var(--touch-target);
+  place-items: center;
+  padding: 9px 16px;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 10px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--card) 85%, var(--accent));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.app-route__error {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.88rem;
+}
+
+.favorites-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favorites-list__item {
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 10px;
+  font-weight: 700;
+}
+
 .cabecalho {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--touch-target);

@@ -9,8 +9,11 @@ import { useWeather } from '../hooks/useWeather'
 import { getStoredCity, setStoredCity } from '../utils/storage'
 import { getWeatherCondition } from '../utils/weatherCondition'
 import { getWeatherSummary } from '../utils/weatherSummary.js'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AppNavigation } from './AppNavigation.jsx'
 import '../styles/tokens.css'
 import '../styles/themes.css'
+import { AccountPage, FavoritesPage, NotFoundPage, SettingsPage } from './StaticPages.jsx'
 
 const DEBUG_CONDITIONS = [
   'clear',
@@ -32,7 +35,7 @@ function getDebugCondition() {
 
 const Playground = lazy(() => import('../playground/Playground'))
 
-export default function App() {
+function WeatherPage() {
   const [city, setCity] = useState(() => getStoredCity())
   const [cityInput, setCityInput] = useState(city)
   const [debugCondition] = useState(() => getDebugCondition())
@@ -108,6 +111,7 @@ export default function App() {
       <main className="app-clima" data-theme={condition} data-device={device}>
         <WeatherBackground condition={condition} />
         <div className="conteudo-clima">
+          <AppNavigation />
           <Header
             items={NAV_ITEMS}
             resumo={resumo}
@@ -149,5 +153,19 @@ export default function App() {
         </div>
       </main>
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WeatherPage />} />
+        <Route path="/favoritos" element={<FavoritesPage />} />
+        <Route path="/conta" element={<AccountPage />} />
+        <Route path="/configuracoes" element={<SettingsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
