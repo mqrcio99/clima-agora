@@ -1,3 +1,4 @@
+import { formatTemperature } from '../../utils/format.js'
 import { getHourlyForecastOverview, getRainRiskLevel } from '../../utils/hourlyForecast.js'
 import { getWeatherCondition } from '../../utils/weatherCondition.js'
 
@@ -21,13 +22,8 @@ const CONDITION_LABELS = {
   storm: 'Tempestade',
 }
 
-function formatMetric(value) {
-  if (value === null || value === undefined || value === '') {
-    return '—'
-  }
-
-  const number = Number(value)
-  return Number.isFinite(number) ? `${Math.round(number)}°` : '—'
+function formatMetric(value, unit = 'celsius') {
+  return formatTemperature(value, unit)
 }
 
 export function Forecast({
@@ -37,7 +33,9 @@ export function Forecast({
   startIndex = 0,
   daysToShow = 5,
   showHourly = true,
+  preferences = {},
 }) {
+  const temperatureUnit = preferences.temperatureUnit ?? 'celsius'
   const days = data?.daily
   const hourly = getHourlyForecastOverview(data?.hourly ?? {}, { timezone: data?.timezone })
   const rainRisk = getRainRiskLevel(hourly)
@@ -61,7 +59,7 @@ export function Forecast({
                   {CONDITION_LABELS[item.condition] || 'Clima'}
                 </small>
                 <div>
-                  <b>{formatMetric(item.temperature)}</b>
+                  <b>{formatMetric(item.temperature, temperatureUnit)}</b>
                   <small>{item.chance === null ? '—' : `${item.chance}%`}</small>
                 </div>
               </article>
@@ -108,8 +106,8 @@ export function Forecast({
               <strong>{ICONS[condition]}</strong>
               <small className="cartao-dia__label">{CONDITION_LABELS[condition]}</small>
               <div>
-                <b>{formatMetric(days.temperature_2m_max[index])}</b>
-                <small>{formatMetric(days.temperature_2m_min[index])}</small>
+                <b>{formatMetric(days.temperature_2m_max[index], temperatureUnit)}</b>
+                <small>{formatMetric(days.temperature_2m_min[index], temperatureUnit)}</small>
               </div>
             </article>
           )

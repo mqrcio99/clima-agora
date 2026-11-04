@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  DEFAULT_SETTINGS,
+  SETTINGS_KEY,
   getFavorites,
   getPreferences,
+  getSettings,
   getStoredCity,
+  resetSettings,
   setFavorites,
   setPreferences,
+  setSettings,
   setStoredCity,
 } from '../storage.js'
 
@@ -69,4 +74,64 @@ test('remove a cidade quando o valor informado é vazio', () => {
   setStoredCity('   ')
 
   assert.equal(getStoredCity(), '')
+})
+
+test('usa padrões e valida cada campo das configurações', () => {
+  globalThis.localStorage = makeStorage({
+    values: {
+      [SETTINGS_KEY]: JSON.stringify({
+        version: 1,
+        values: {
+          theme: 'unknown',
+          animations: 'fast',
+          temperatureUnit: 'kelvin',
+          windUnit: 'knots',
+          timeFormat: '36h',
+          useLocationOnOpen: 'yes',
+          defaultCity: 'x'.repeat(200),
+          ignored: 'discarded',
+        },
+      }),
+    },
+  })
+
+  assert.deepEqual(getSettings(), DEFAULT_SETTINGS)
+})
+
+test('migra as preferências antigas para a chave versionada atual', () => {
+  globalThis.localStorage = makeStorage({
+    values: {
+      'clima-agora:v1:preferences': JSON.stringify({ theme: 'dark', units: 'imperial' }),
+    },
+  })
+
+  assert.deepEqual(getSettings(), {
+    ...DEFAULT_SETTINGS,
+    theme: 'dark',
+    temperatureUnit: 'fahrenheit',
+    windUnit: 'mph',
+  })
+  assert.equal(globalThis.localStorage.data.has(SETTINGS_KEY), true)
+})
+
+test('salva e restaura as configurações na chave própria', () => {
+  globalThis.localStorage = makeStorage()
+
+  setSettings({ temperatureUnit: 'fahrenheit', defaultCity: 'Campinas' })
+  assert.equal(getSettings().temperatureUnit, 'fahrenheit')
+  assert.equal(getSettings().defaultCity, 'Campinas')
+
+  resetSettings()
+
+  assert.deepEqual(getSettings(), DEFAULT_SETTINGS)
+})
+
+test('retorna padrões sem lançar quando o storage está indisponível', () => {
+  globalThis.localStorage = makeStorage({ throwsOnSet: true })
+  globalThis.localStorage.getItem = () => {
+    throw new Error('storage indisponível')
+  }
+
+  assert.deepEqual(getSettings(), DEFAULT_SETTINGS)
+  assert.doesNotThrow(() => setSettings({ theme: 'night' }))
 })

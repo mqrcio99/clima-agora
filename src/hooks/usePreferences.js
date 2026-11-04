@@ -1,18 +1,39 @@
-import { useCallback, useState } from 'react'
-import { getPreferences, setPreferences } from '../services/storage.js'
+import { createContext, createElement, useCallback, useContext, useState } from 'react'
+import { localPreferencesRepository } from '../services/preferencesRepository.js'
+
+const PreferencesContext = createContext(null)
+
+export function PreferencesProvider({ children, repository = localPreferencesRepository }) {
+  const [preferences, setPreferencesState] = useState(() => repository.read())
+
+  const setPreferences = useCallback(
+    nextPreferences => {
+      setPreferencesState(currentPreferences => {
+        const basePreferences = currentPreferences ?? repository.read()
+        const updated = repository.save({ ...basePreferences, ...(nextPreferences || {}) })
+        return updated
+      })
+    },
+    [repository],
+  )
+
+  const resetPreferences = useCallback(() => {
+    setPreferencesState(() => repository.reset())
+  }, [repository])
+
+  return createElement(
+    PreferencesContext.Provider,
+    { value: { preferences, setPreferences, resetPreferences } },
+    children,
+  )
+}
 
 export function usePreferences() {
-  const [preferences, setPreferenceState] = useState(() => getPreferences())
+  const context = useContext(PreferencesContext)
 
-  const updatePreferences = useCallback(nextPreferences => {
-    const normalized = {
-      ...getPreferences(),
-      ...(nextPreferences || {}),
-    }
+  if (!context) {
+    throw new Error('usePreferences deve ser usado dentro de PreferencesProvider')
+  }
 
-    setPreferenceState(normalized)
-    setPreferences(normalized)
-  }, [])
-
-  return { preferences, setPreferences: updatePreferences }
+  return context
 }

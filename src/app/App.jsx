@@ -5,6 +5,7 @@ import { WeatherCard } from '../components/WeatherCard/WeatherCard.jsx'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './AppLayout.jsx'
 import { PageHeading } from './PageHeading.jsx'
+import { PreferencesProvider } from '../hooks/usePreferences.js'
 import '../styles/tokens.css'
 import '../styles/themes.css'
 const loadPages = () => import('./StaticPages.jsx')
@@ -14,7 +15,7 @@ const SettingsPage = lazy(() => loadPages().then(module => ({ default: module.Se
 const NotFoundPage = lazy(() => loadPages().then(module => ({ default: module.NotFoundPage })))
 
 function WeatherPage() {
-  const { data, loading, error, condition } = useOutletContext()
+  const { data, loading, error, condition, preferences } = useOutletContext()
 
   return (
     <>
@@ -24,10 +25,16 @@ function WeatherPage() {
           {loading && !data ? (
             <LocationTransition />
           ) : (
-            <WeatherCard data={data} loading={loading} error={error} condition={condition} />
+            <WeatherCard
+              data={data}
+              loading={loading}
+              error={error}
+              condition={condition}
+              preferences={preferences}
+            />
           )}
         </div>
-        <Forecast data={data} />
+        <Forecast data={data} preferences={preferences} />
       </div>
       <div className="secoes-previsao">
         <Forecast
@@ -36,6 +43,7 @@ function WeatherPage() {
           title="Hoje e os próximos 15 dias"
           daysToShow={16}
           showHourly={false}
+          preferences={preferences}
         />
       </div>
       {error && data && (
@@ -50,15 +58,17 @@ function WeatherPage() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route index element={<WeatherPage />} />
-          <Route path="favoritos" element={<FavoritesPage />} />
-          <Route path="conta" element={<AccountPage />} />
-          <Route path="configuracoes" element={<SettingsPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <PreferencesProvider>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route index element={<WeatherPage />} />
+            <Route path="favoritos" element={<FavoritesPage />} />
+            <Route path="conta" element={<AccountPage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </PreferencesProvider>
     </BrowserRouter>
   )
 }

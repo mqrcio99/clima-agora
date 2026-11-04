@@ -6,6 +6,7 @@ import { useWeather } from '../hooks/useWeather.js'
 import { getStoredCity, setStoredCity } from '../utils/storage.js'
 import { getWeatherCondition } from '../utils/weatherCondition.js'
 import { getWeatherSummary } from '../utils/weatherSummary.js'
+import { usePreferences } from '../hooks/usePreferences.js'
 import { AppHeader } from './AppHeader.jsx'
 import { NAV_ITEMS } from './navItems.js'
 
@@ -48,6 +49,7 @@ export function AppLayout() {
   const [device, setDevice] = useState(getInitialDevice)
   const [debugCondition] = useState(getDebugCondition)
   const { data, loading, error, locationDenied } = useWeather({ city })
+  const { preferences } = usePreferences()
   const summary = getWeatherSummary(data)
 
   useEffect(() => {
@@ -74,6 +76,7 @@ export function AppLayout() {
             isDay: data.current.is_day,
           })
         : 'clear'
+  const theme = preferences.theme === 'auto' ? weatherCondition : preferences.theme
   const displayedCity = city && loading ? city : data?.city || city || 'Local padrão'
   const showPlayground =
     import.meta.env.DEV && new URLSearchParams(window.location.search).has('playground')
@@ -85,7 +88,7 @@ export function AppLayout() {
   }
 
   return (
-    <main className="app-clima" data-theme={weatherCondition} data-device={device}>
+    <main className="app-clima" data-theme={theme} data-device={device}>
       <WeatherBackground condition={weatherCondition} />
       {showPlayground && (
         <Suspense fallback={<div className="playground-loader">Carregando playground…</div>}>
@@ -116,6 +119,7 @@ export function AppLayout() {
                 loading,
                 error,
                 condition: weatherCondition,
+                preferences,
               }}
             />
           </Suspense>

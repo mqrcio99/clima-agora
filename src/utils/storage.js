@@ -1,11 +1,44 @@
 const STORAGE_PREFIX = 'clima-agora'
 const STORAGE_VERSION = 'v1'
+const SETTINGS_VERSION = 1
+const LEGACY_PREFERENCES_KEY = `${STORAGE_PREFIX}:${STORAGE_VERSION}:preferences`
+
+const WEATHER_THEMES = [
+  'clear',
+  'rain',
+  'snow',
+  'cloudy',
+  'night',
+  'storm',
+  'cold',
+  'heat',
+  'wind',
+  'uv',
+  'light',
+  'dark',
+]
+const ANIMATION_MODES = ['system', 'on', 'off']
+const TEMPERATURE_UNITS = ['celsius', 'fahrenheit']
+const WIND_UNITS = ['kmh', 'ms', 'mph']
+const TIME_FORMATS = ['24h', '12h']
 
 export const STORAGE_KEYS = {
   lastCity: `${STORAGE_PREFIX}:${STORAGE_VERSION}:last-city`,
   favorites: `${STORAGE_PREFIX}:${STORAGE_VERSION}:favorites`,
   preferences: `${STORAGE_PREFIX}:${STORAGE_VERSION}:preferences`,
 }
+
+export const SETTINGS_KEY = 'climaagora:v1:settings'
+
+export const DEFAULT_SETTINGS = Object.freeze({
+  theme: 'auto',
+  animations: 'system',
+  temperatureUnit: 'celsius',
+  windUnit: 'kmh',
+  timeFormat: '24h',
+  useLocationOnOpen: true,
+  defaultCity: '',
+})
 
 export const LAST_CITY_KEY = STORAGE_KEYS.lastCity
 
@@ -15,12 +48,16 @@ export const DEFAULT_PREFERENCES = Object.freeze({
 })
 
 function getStorage() {
-  if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
-    return globalThis.localStorage
-  }
+  try {
+    if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
+      return globalThis.localStorage
+    }
 
-  if (typeof window !== 'undefined' && window.localStorage) {
-    return window.localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage
+    }
+  } catch {
+    return null
   }
 
   return null
@@ -118,6 +155,92 @@ export function setStoredCity(city) {
   }
 
   safeWriteValue(STORAGE_KEYS.lastCity, normalized)
+}
+
+export function normalizeSettings(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { ...DEFAULT_SETTINGS }
+  }
+
+  const defaultCity =
+    typeof value.defaultCity === 'string' &&
+    value.defaultCity.trim().length <= 120 &&
+    !Array.from(value.defaultCity).some(
+      character => character.charCodeAt(0) <= 0x1f || character.charCodeAt(0) === 0x7f,
+    )
+      ? value.defaultCity.trim()
+      : DEFAULT_SETTINGS.defaultCity
+
+  return {
+    theme:
+      value.theme === 'auto' || WEATHER_THEMES.includes(value.theme)
+        ? value.theme
+        : DEFAULT_SETTINGS.theme,
+    animations: ANIMATION_MODES.includes(value.animations)
+      ? value.animations
+      : DEFAULT_SETTINGS.animations,
+    temperatureUnit: TEMPERATURE_UNITS.includes(value.temperatureUnit)
+      ? value.temperatureUnit
+      : DEFAULT_SETTINGS.temperatureUnit,
+    windUnit: WIND_UNITS.includes(value.windUnit) ? value.windUnit : DEFAULT_SETTINGS.windUnit,
+    timeFormat: TIME_FORMATS.includes(value.timeFormat) ? value.timeFormat : DEFAULT_SETTINGS.timeFormat,
+    useLocationOnOpen:
+      typeof value.useLocationOnOpen === 'boolean'
+        ? value.useLocationOnOpen
+        : DEFAULT_SETTINGS.useLocationOnOpen,
+    defaultCity,
+  }
+}
+
+function migrateLegacyPreferences() {
+  const legacy = safeReadValue(LEGACY_PREFERENCES_KEY, null)
+
+  if (!legacy || typeof legacy !== 'object' || Array.isArray(legacy)) {
+    return { ...DEFAULT_SETTINGS }
+  }
+
+  const migrated = normalizeSettings({
+    theme: legacy.theme,
+    temperatureUnit: legacy.units === 'imperial' ? 'fahrenheit' : 'celsius',
+    windUnit: legacy.units === 'imperial' ? 'mph' : 'kmh',
+  })
+
+  safeWriteValue(SETTINGS_KEY, { version: SETTINGS_VERSION, values: migrated })
+  return migrated
+}
+
+export function getSettings() {
+  const stored = safeReadValue(SETTINGS_KEY, null)
+
+  if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+    if (stored.version === SETTINGS_VERSION) {
+      return normalizeSettings(stored.values)
+    }
+
+    if (stored.version === 0 && stored.values && typeof stored.values === 'object') {
+      const migrated = normalizeSettings(stored.values)
+      safeWriteValue(SETTINGS_KEY, { version: SETTINGS_VERSION, values: migrated })
+      return migrated
+    }
+  }
+
+  return migrateLegacyPreferences()
+}
+
+export function setSettings(nextSettings) {
+  if (!nextSettings || typeof nextSettings !== 'object' || Array.isArray(nextSettings)) {
+    return false
+  }
+
+  const normalized = normalizeSettings({ ...getSettings(), ...nextSettings })
+  return safeWriteValue(SETTINGS_KEY, { version: SETTINGS_VERSION, values: normalized })
+}
+
+export function resetSettings() {
+  return safeWriteValue(SETTINGS_KEY, {
+    version: SETTINGS_VERSION,
+    values: { ...DEFAULT_SETTINGS },
+  })
 }
 
 function normalizeFavorite(value) {

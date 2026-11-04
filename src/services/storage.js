@@ -1,11 +1,17 @@
 export {
   DEFAULT_PREFERENCES,
+  DEFAULT_SETTINGS,
   LAST_CITY_KEY,
+  SETTINGS_KEY,
   STORAGE_KEYS,
   getFavorites,
   getPreferences,
+  getSettings,
   getStoredCity,
+  normalizeSettings,
+  resetSettings,
   setFavorites,
   setPreferences,
+  setSettings,
   setStoredCity,
 } from '../utils/storage.js'

@@ -1,4 +1,5 @@
 import { getWeatherAlerts } from '../../utils/alerts.js'
+import { formatTemperature, formatTime, formatWindSpeed } from '../../utils/format.js'
 
 const ICONS = {
   clear: '☀️',
@@ -34,31 +35,11 @@ function formatMetric(value, unit = '') {
   return number === null ? '—' : `${Math.round(number)}${unit}`
 }
 
-function formatTime(value, timezone) {
-  if (!value) {
-    return '—'
-  }
-
-  const localTime = value.match(/T(\d{2}:\d{2})/)
-  if (localTime) {
-    return localTime[1]
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return '—'
-  }
-
-  return new Intl.DateTimeFormat('pt-BR', {
-    timeZone: timezone,
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-}
-
-export function WeatherCard({ data, loading, error, condition }) {
+export function WeatherCard({ data, loading, error, condition, preferences = {} }) {
   const current = data?.current
+  const temperatureUnit = preferences.temperatureUnit ?? 'celsius'
+  const windUnit = preferences.windUnit ?? 'kmh'
+  const timeFormat = preferences.timeFormat ?? '24h'
   const daily = data?.daily
   const alerts = getWeatherAlerts(data ?? {})
   const orderedAlerts = [...alerts].sort(
@@ -127,11 +108,11 @@ export function WeatherCard({ data, loading, error, condition }) {
 
       <div className="linha-temperatura" aria-live="polite">
         <div>
-          <strong>{formatMetric(current.temperature_2m, '°')}</strong>
+          <strong>{formatTemperature(current.temperature_2m, temperatureUnit)}</strong>
           <span>{CONDITION_LABELS[condition] || 'Clima'}</span>
         </div>
         <p>
-          Sensação <b>{formatMetric(current.apparent_temperature, '°')}</b>
+          Sensação <b>{formatTemperature(current.apparent_temperature, temperatureUnit)}</b>
         </p>
       </div>
 
@@ -145,24 +126,24 @@ export function WeatherCard({ data, loading, error, condition }) {
           <strong>
             {safeNumber(current.wind_speed_10m) === null
               ? '—'
-              : `${Math.round(safeNumber(current.wind_speed_10m))} km/h`}
+              : formatWindSpeed(current.wind_speed_10m, windUnit)}
           </strong>
         </div>
         <div>
           <span>Mínima</span>
-          <strong>{formatMetric(daily?.temperature_2m_min?.[0], '°')}</strong>
+          <strong>{formatTemperature(daily?.temperature_2m_min?.[0], temperatureUnit)}</strong>
         </div>
         <div>
           <span>Máxima</span>
-          <strong>{formatMetric(daily?.temperature_2m_max?.[0], '°')}</strong>
+          <strong>{formatTemperature(daily?.temperature_2m_max?.[0], temperatureUnit)}</strong>
         </div>
         <div>
           <span>Nascer</span>
-          <strong>{formatTime(daily?.sunrise?.[0], data.timezone)}</strong>
+          <strong>{formatTime(daily?.sunrise?.[0], timeFormat, data.timezone)}</strong>
         </div>
         <div>
           <span>Pôr do sol</span>
-          <strong>{formatTime(daily?.sunset?.[0], data.timezone)}</strong>
+          <strong>{formatTime(daily?.sunset?.[0], timeFormat, data.timezone)}</strong>
         </div>
         <div>
           <span>UV</span>

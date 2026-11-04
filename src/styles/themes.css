@@ -470,6 +470,56 @@ button {
   font-weight: 700;
 }
 
+.settings-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+}
+
+.settings-group {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-group label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.settings-group select,
+.settings-group input {
+  min-height: var(--touch-target);
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  color: var(--text);
+  font: inherit;
+}
+
+.settings-group select:focus-visible,
+.settings-group input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings-actions {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.settings-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 @keyframes route-enter {
   from {
     opacity: 0.82;
