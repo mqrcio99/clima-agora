@@ -28,7 +28,27 @@ dist-ssr
 # Credentials and local environment
 **/.env*
 !**/.env.example
+**/.vercel/
 **/credentials.json
 **/*.keystore
 **/*.jks
 **/*.p12
+**/*.pem
+**/*.crt
+**/*.key
+**/*.token
+**/*.secret
+
+# Supabase and local project artifacts
+supabase/.temp/
+.supabase/
+
+# Logs and build artifacts
+logs/
+*.log
+npm-debug.log*
+
+# Keep build output out of source control
+/dist/
+dist/
+dist-ssr/

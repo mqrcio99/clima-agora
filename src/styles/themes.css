@@ -288,6 +288,249 @@ button {
   padding: 0;
 }
 
+.app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.app-header > .marca {
+  grid-column: 1;
+  grid-row: 1;
+  width: max-content;
+  max-width: 100%;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.app-navigation--desktop {
+  display: none;
+}
+
+.app-navigation__actions {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+}
+
+.app-navigation__icon-link {
+  display: grid;
+  width: var(--touch-target);
+  min-width: var(--touch-target);
+  height: var(--touch-target);
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 12px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--card) 84%, transparent);
+}
+
+.app-navigation__icon-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.app-navigation__icon-link--active {
+  border-color: var(--text);
+  background: var(--card);
+}
+
+.app-navigation--mobile {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px max(env(safe-area-inset-right), var(--page-gutter))
+    calc(8px + env(safe-area-inset-bottom)) max(env(safe-area-inset-left), var(--page-gutter));
+  border-top: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.app-navigation__link {
+  display: grid;
+  min-width: 0;
+  min-height: var(--touch-target);
+  place-items: center;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.app-navigation__link--active {
+  border-color: color-mix(in srgb, var(--text) 20%, transparent);
+  background: var(--card);
+}
+
+.app-navigation__link:focus-visible,
+.app-navigation__icon-link:focus-visible,
+.app-header > .marca:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.route-content {
+  min-width: 0;
+  animation: route-enter 180ms ease-out both;
+}
+
+.route-page__title {
+  margin: 0 0 16px;
+  font-size: clamp(1.45rem, 1.2rem + 1vw, 2rem);
+  line-height: 1.2;
+}
+
+.route-page__title:focus {
+  outline: none;
+}
+
+.route-page__title:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+}
+
+.app-route {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-block: 8px;
+  color: var(--text);
+}
+
+.app-route h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 1.2rem + 1vw, 2rem);
+  line-height: 1.2;
+}
+
+.app-route__empty,
+.app-route__content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.app-route__content {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+
+.app-route__action {
+  display: inline-grid;
+  min-height: var(--touch-target);
+  place-items: center;
+  padding: 9px 16px;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 10px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--card) 85%, var(--accent));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.app-route__error {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.88rem;
+}
+
+.favorites-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favorites-list__item {
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+}
+
+.settings-group {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-group label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.settings-group select,
+.settings-group input {
+  min-height: var(--touch-target);
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  color: var(--text);
+  font: inherit;
+}
+
+.settings-group select:focus-visible,
+.settings-group input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings-actions {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.settings-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0.82;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .cabecalho {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--touch-target);
@@ -554,7 +797,7 @@ button {
   box-shadow: 0 28px 72px rgba(11, 17, 27, 0.5);
 }
 
-.app-clima[data-device='tv'] .cartao-clima h1 {
+.app-clima[data-device='tv'] .cartao-clima h2 {
   font-size: clamp(2.2rem, 3vw, 3.4rem);
 }
 
@@ -740,7 +983,7 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
-.cartao-clima h1 {
+.cartao-clima h2 {
   margin: 0;
   font-size: var(--font-size-lg);
 }
@@ -1307,6 +1550,32 @@ a:focus-visible {
 }
 
 @media (min-width: 1024px) {
+  .app-header {
+    grid-template-columns: auto minmax(220px, 1fr) auto;
+    gap: clamp(12px, 2vw, 28px);
+    margin-bottom: 20px;
+  }
+
+  .app-navigation--desktop {
+    display: flex;
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .app-navigation__actions {
+    grid-column: 3;
+  }
+
+  .app-navigation--mobile {
+    display: none;
+  }
+
+  .app-navigation__link {
+    min-width: 92px;
+  }
+
   .cabecalho {
     display: flex;
     flex-wrap: nowrap;
@@ -1384,6 +1653,14 @@ a:focus-visible {
 
   .secoes-previsao {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .app-clima {
+    padding-bottom: calc(
+      max(env(safe-area-inset-bottom), var(--page-gutter)) + var(--touch-target) + 18px
+    );
   }
 }
 
@@ -1465,5 +1742,9 @@ a:focus-visible {
   .cabecalho__link:hover,
   .cabecalho__link:focus-visible {
     transform: none;
+  }
+
+  .route-content {
+    animation: none;
   }
 }
