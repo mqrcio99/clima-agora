@@ -96,7 +96,7 @@ export function WeatherCard({ data, loading, error, condition }) {
       <div className="cartao-clima__cabecalho">
         <div>
           <p className="eyebrow">Previsão do tempo</p>
-          <h1>{data.city}</h1>
+          <h2>{data.city}</h2>
         </div>
         <span className="icone-condicao" aria-hidden="true">
           {ICONS[condition] || '☁️'}

@@ -73,6 +73,7 @@ export function Header({
   locationDenied,
   onCityChange,
   onSearch,
+  showBrand = true,
 }) {
   const searchInputRef = useRef(null)
   const headerRef = useRef(null)
@@ -114,12 +115,14 @@ export function Header({
 
   return (
     <header className={`cabecalho${menuOpen ? ' cabecalho--menu-aberto' : ''}`} ref={headerRef}>
-      <div className="marca">
-        <span className="marca__icone" aria-hidden="true">
-          ☀
-        </span>
-        <span>Clima Agora</span>
-      </div>
+      {showBrand && (
+        <div className="marca">
+          <span className="marca__icone" aria-hidden="true">
+            ☀
+          </span>
+          <span>Clima Agora</span>
+        </div>
+      )}
 
       <button
         className="cabecalho__menu"

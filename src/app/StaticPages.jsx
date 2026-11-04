@@ -3,19 +3,14 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 import { isSupabaseConfigured, signInWithSocial } from '../services/supabase.js'
-import { AppNavigation } from './AppNavigation.jsx'
+import { PageHeading } from './PageHeading.jsx'
 
-function RouteLayout({ title, children }) {
+function RoutePage({ title, documentTitle, children }) {
   return (
-    <main className="app-clima" data-theme="clear">
-      <div className="conteudo-clima">
-        <AppNavigation />
-        <section className="app-route" aria-labelledby="route-title">
-          <h1 id="route-title">{title}</h1>
-          {children}
-        </section>
-      </div>
-    </main>
+    <section className="app-route" aria-labelledby="route-title">
+      <PageHeading documentTitle={documentTitle}>{title}</PageHeading>
+      {children}
+    </section>
   )
 }
 
@@ -23,7 +18,7 @@ export function FavoritesPage() {
   const { favorites } = useFavorites()
 
   return (
-    <RouteLayout title="Favoritos">
+    <RoutePage title="Favoritos" documentTitle="Favoritos — Clima Agora">
       {favorites.length ? (
         <ul className="favorites-list">
           {favorites.map(favorite => (
@@ -41,7 +36,7 @@ export function FavoritesPage() {
       <Link className="app-route__action" to="/">
         Voltar ao clima
       </Link>
-    </RouteLayout>
+    </RoutePage>
   )
 }
 
@@ -60,7 +55,7 @@ export function AccountPage() {
   }
 
   return (
-    <RouteLayout title="Conta">
+    <RoutePage title="Conta" documentTitle="Conta — Clima Agora">
       {!isSupabaseConfigured() ? (
         <p className="app-route__empty">A autenticação ainda não está configurada.</p>
       ) : session?.user ? (
@@ -93,27 +88,27 @@ export function AccountPage() {
           {actionError || sessionError}
         </p>
       )}
-    </RouteLayout>
+    </RoutePage>
   )
 }
 
 export function SettingsPage() {
   return (
-    <RouteLayout title="Configurações">
+    <RoutePage title="Configurações" documentTitle="Configurações — Clima Agora">
       <p className="app-route__empty">
         Os ajustes desta página serão definidos no plano de implementação.
       </p>
-    </RouteLayout>
+    </RoutePage>
   )
 }
 
 export function NotFoundPage() {
   return (
-    <RouteLayout title="Página não encontrada">
+    <RoutePage title="Página não encontrada" documentTitle="Página não encontrada — Clima Agora">
       <p className="app-route__empty">Este endereço não corresponde a uma página do Clima Agora.</p>
       <Link className="app-route__action" to="/">
         Ir para o clima
       </Link>
-    </RouteLayout>
+    </RoutePage>
   )
 }
