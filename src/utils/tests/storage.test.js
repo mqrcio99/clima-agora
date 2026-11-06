@@ -47,6 +47,16 @@ test('grava a última cidade sem quebrar quando o storage falha', () => {
   assert.equal(getStoredCity(), '')
 })
 
+test('lê a cidade salva no formato legado do armazenamento', () => {
+  globalThis.localStorage = makeStorage({
+    values: {
+      'clima-agora:last-city': '"Belo Horizonte"',
+    },
+  })
+
+  assert.equal(getStoredCity(), 'Belo Horizonte')
+})
+
 test('retorna fallback seguro quando o JSON armazenado estiver corrompido', () => {
   globalThis.localStorage = makeStorage({
     values: {

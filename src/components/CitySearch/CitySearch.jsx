@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Search } from 'lucide-react'
 
 export function CitySearch({ onSearch, disabled = false, value = '', onChange, inputRef }) {
   const [internalCity, setInternalCity] = useState('')
@@ -40,6 +41,7 @@ export function CitySearch({ onSearch, disabled = false, value = '', onChange, i
           disabled={disabled || !controlledValue.trim()}
           aria-label="Buscar clima da cidade"
         >
+          <Search aria-hidden="true" size={16} strokeWidth={2} />
           Buscar
         </button>
       </div>

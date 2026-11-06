@@ -62,7 +62,9 @@ export function WeatherCard({ data, loading, error, condition, preferences = {} 
     return (
       <section className="cartao-clima cartao-clima--error" role="alert">
         <span className="cartao-clima__icon">⚠️</span>
-        <h2>Não foi possível carregar o clima</h2>
+        <p className="cartao-clima__error-titulo" aria-live="assertive">
+          Não foi possível carregar o clima
+        </p>
         <p>{error}</p>
       </section>
     )

@@ -333,7 +333,8 @@ button {
 .app-navigation__icon-link svg {
   width: 20px;
   height: 20px;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
 }
 
 .app-navigation__icon-link--active {
@@ -570,8 +571,11 @@ button {
   font-size: 1.25rem;
 }
 
-.cabecalho__menu span {
-  line-height: 1;
+.cabecalho__menu svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
 }
 
 .cabecalho__navegacao {
@@ -674,7 +678,13 @@ button {
   height: 16px;
   flex: 0 0 auto;
   place-items: center;
-  fill: currentColor;
+  color: currentColor;
+}
+
+.cabecalho__localizacao-icone svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
 }
 
 .cabecalho__localizacao-nome {
@@ -780,6 +790,10 @@ button {
 }
 
 .busca-cidade button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: var(--touch-target);
   min-width: var(--touch-target);
   padding: 11px 16px;
@@ -788,6 +802,10 @@ button {
   color: var(--card);
   background: var(--text);
   font-weight: 700;
+}
+
+.busca-cidade button svg {
+  flex: 0 0 auto;
 }
 
 .app-clima[data-device='tv'] .cartao-clima,
@@ -1100,6 +1118,15 @@ a:focus-visible {
   font-weight: 700;
 }
 
+.previsao__cabecalho--horas span {
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  text-transform: capitalize;
+}
+
 .previsao__lista {
   display: grid;
   grid-auto-flow: column;
@@ -1142,6 +1169,98 @@ a:focus-visible {
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
 }
 
+.cartao-dia--hora {
+  min-height: 142px;
+  align-content: start;
+  gap: 9px;
+  padding: 14px 11px;
+  border-color: color-mix(in srgb, var(--text) 13%, transparent);
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--card) 90%, var(--accent)),
+    color-mix(in srgb, var(--card) 97%, var(--text))
+  );
+}
+
+.cartao-dia--agora {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--text));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--accent) 20%, var(--card)),
+    color-mix(in srgb, var(--accent) 7%, var(--card))
+  );
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--accent) 78%, var(--text));
+}
+
+.cartao-dia--hora > span {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.cartao-dia--hora strong {
+  font-size: 1.7rem;
+  filter: drop-shadow(0 3px 8px color-mix(in srgb, var(--accent) 24%, transparent));
+}
+
+.cartao-dia--hora div {
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.cartao-dia--hora div b {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.cartao-dia--hora div small {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  font-size: 0.68rem;
+}
+
+.cartao-dia--dia {
+  min-height: 154px;
+  align-content: start;
+  gap: 8px;
+  border-color: color-mix(in srgb, var(--text) 12%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card) 96%, var(--accent)),
+    color-mix(in srgb, var(--card) 92%, var(--text))
+  );
+}
+
+.cartao-dia--hoje {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--text));
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--accent) 72%, var(--text));
+}
+
+.cartao-dia--dia > span {
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cartao-dia--dia strong {
+  font-size: 1.55rem;
+}
+
+.cartao-dia--dia div {
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-dia--dia div b {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.cartao-dia--dia div small {
+  opacity: 0.82;
+}
+
 .cartao-dia > span {
   color: var(--muted);
   font-size: 0.72rem;
@@ -1167,6 +1286,40 @@ a:focus-visible {
 
 .cartao-dia small {
   color: var(--muted);
+}
+
+@media (max-width: 639px) {
+  .previsao__lista--dias .cartao-dia--dia {
+    grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr);
+    grid-template-areas:
+      'day icon temps'
+      'condition icon temps';
+    align-items: center;
+    min-height: 76px;
+    gap: 3px 10px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .previsao__lista--dias .cartao-dia--dia > span {
+    grid-area: day;
+  }
+
+  .previsao__lista--dias .cartao-dia--dia > strong {
+    grid-area: icon;
+  }
+
+  .previsao__lista--dias .cartao-dia--dia .cartao-dia__label {
+    grid-area: condition;
+    min-height: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .previsao__lista--dias .cartao-dia--dia > div {
+    grid-area: temps;
+    justify-self: end;
+    gap: 8px;
+  }
 }
 
 .transicao-localizacao {
@@ -1441,10 +1594,30 @@ a:focus-visible {
 }
 
 @media (min-width: 640px) {
+  .conteudo-clima {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+    column-gap: 14px;
+    row-gap: 14px;
+    align-items: start;
+  }
+
+  .app-header {
+    grid-column: 1;
+    grid-row: 1;
+    margin-bottom: 0;
+  }
+
   .cabecalho {
+    grid-column: 2;
+    grid-row: 1;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
     gap: 14px;
-    margin-bottom: 28px;
+    margin-bottom: 0;
+  }
+
+  .route-content {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .cabecalho__menu {
@@ -1458,6 +1631,11 @@ a:focus-visible {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
+  }
+
+  .cabecalho > .marca {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .cabecalho__navegacao {

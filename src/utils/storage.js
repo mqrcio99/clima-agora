@@ -28,6 +28,8 @@ export const STORAGE_KEYS = {
   preferences: `${STORAGE_PREFIX}:${STORAGE_VERSION}:preferences`,
 }
 
+const LEGACY_LAST_CITY_KEY = `${STORAGE_PREFIX}:last-city`
+
 export const SETTINGS_KEY = 'climaagora:v1:settings'
 
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -128,22 +130,34 @@ export function getStoredCity() {
     return ''
   }
 
-  try {
-    const rawValue = storage.getItem(STORAGE_KEYS.lastCity)
+  const candidateKeys = [STORAGE_KEYS.lastCity, LEGACY_LAST_CITY_KEY]
 
-    if (rawValue === null) {
-      return ''
-    }
-
+  for (const key of candidateKeys) {
     try {
-      const parsedValue = JSON.parse(rawValue)
-      return typeof parsedValue === 'string' ? normalizeStoredString(parsedValue) : ''
+      const rawValue = storage.getItem(key)
+
+      if (rawValue === null) {
+        continue
+      }
+
+      try {
+        const parsedValue = JSON.parse(rawValue)
+        const normalizedValue = typeof parsedValue === 'string' ? normalizeStoredString(parsedValue) : ''
+        if (normalizedValue) {
+          return normalizedValue
+        }
+      } catch {
+        const normalizedValue = normalizeStoredString(rawValue)
+        if (normalizedValue) {
+          return normalizedValue
+        }
+      }
     } catch {
-      return normalizeStoredString(rawValue)
+      continue
     }
-  } catch {
-    return ''
   }
+
+  return ''
 }
 
 export function setStoredCity(city) {
@@ -151,10 +165,12 @@ export function setStoredCity(city) {
 
   if (!normalized) {
     safeRemoveValue(STORAGE_KEYS.lastCity)
+    safeRemoveValue(LEGACY_LAST_CITY_KEY)
     return
   }
 
   safeWriteValue(STORAGE_KEYS.lastCity, normalized)
+  safeRemoveValue(LEGACY_LAST_CITY_KEY)
 }
 
 export function normalizeSettings(value) {
