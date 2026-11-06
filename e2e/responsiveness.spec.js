@@ -422,6 +422,42 @@ test('card ocupa a largura do conteúdo e resumo de 15 dias não corta no deskto
   }
 })
 
+test('painéis de previsão ficam centralizados, elevados e com blur sutil', async ({ page }) => {
+  await negarGeolocalizacao(page)
+  await simularPrevisao(page)
+  await carregarPrevisao(page)
+
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+
+    const layout = await page.locator('.previsao').evaluateAll(panels =>
+      panels.map(panel => {
+        const bounds = panel.getBoundingClientRect()
+        const parentBounds = panel.parentElement.getBoundingClientRect()
+        const styles = getComputedStyle(panel)
+
+        return {
+          centered:
+            Math.abs(
+              bounds.left + bounds.width / 2 - (parentBounds.left + parentBounds.width / 2),
+            ) <= 1,
+          width: bounds.width,
+          backdropFilter: styles.backdropFilter,
+          elevated: styles.boxShadow !== 'none',
+        }
+      }),
+    )
+
+    expect(layout).toHaveLength(2)
+    expect(layout.every(panel => panel.centered), `${width}px`).toBe(true)
+    expect(layout.every(panel => panel.backdropFilter.includes('blur(7px)')), `${width}px`).toBe(
+      true,
+    )
+    expect(layout.every(panel => panel.elevated), `${width}px`).toBe(true)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
 test('contraste AA em todos os temas na TV', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 })
   await negarGeolocalizacao(page)

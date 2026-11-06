@@ -1101,7 +1101,31 @@ a:focus-visible {
 }
 
 .previsao {
+  width: min(100%, 1080px);
+  justify-self: center;
+  margin-inline: auto;
   padding: clamp(14px, 3vw, 20px);
+  border-color: color-mix(in srgb, var(--text) 20%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.15),
+    0 3px 9px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(7px);
+  transition:
+    box-shadow 240ms ease,
+    background 1s ease,
+    color 1s ease,
+    border-color 1s ease;
+}
+
+@media (hover: hover) {
+  .previsao:hover {
+    box-shadow:
+      0 22px 48px rgba(15, 23, 42, 0.18),
+      0 5px 12px rgba(15, 23, 42, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
 }
 
 .previsao__cabecalho {
