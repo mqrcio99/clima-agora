@@ -3,7 +3,7 @@
 ## Decisões aprovadas
 
 1. Objetivo do banco: sincronizar favoritos e preferências entre dispositivos, com login obrigatório para o fluxo sincronizado.
-2. Autenticação: login social (Google/GitHub/Apple ou equivalente disponível na conta do cliente). O fluxo visitante sem login continua funcionando.
+2. Autenticação: adiada. Google OAuth está fora do escopo atual; o método futuro precisa ser escolhido antes de ativar sincronização. O fluxo visitante sem login continua funcionando.
 3. Dados no banco: favoritos, e eventualmente preferências do usuário (tema, unidade etc.). A última cidade pesquisada continuará no localStorage.
 4. Linguagem: manter JavaScript para o app atual; não migrar para TypeScript neste momento.
 5. Migrations: SQL versionado aplicado no painel do Supabase.
@@ -122,9 +122,9 @@ WITH CHECK (auth.uid() = user_id);
 4. salva última cidade em `localStorage`
 5. mostra previsão
 
-### Fluxo opcional autenticado
+### Fluxo autenticado futuro (adiado)
 
-1. usuário entra com login social
+1. escolher e implementar um método de autenticação
 2. app valida sessão do Supabase
 3. se aprovado, oferece importação dos favoritos do `localStorage`
 4. app sincroniza favoritos e preferências com o banco
@@ -228,4 +228,6 @@ A implementação do Supabase só pode seguir se estes itens estiverem cumpridos
 
 ## Próximo passo
 
-A próxima etapa será a criação da estrutura de segurança e do ambiente local, seguindo os requisitos do projeto e esperando a aprovação específica deste plano antes de avançar para a implementação real.
+O plano está autorizado para preparação do projeto. Siga [`docs/AMBIENTE-SUPABASE.md`](./AMBIENTE-SUPABASE.md) para aplicar a migration e validar RLS, mantendo autenticação e variáveis de deploy adiadas enquanto o provedor não for escolhido.
+
+Antes de habilitar sincronização real, confirme no painel que as tabelas existem e que o RLS está ativo. Depois da escolha de autenticação, conecte o ciclo de sessão à importação opcional dos favoritos locais e implemente a persistência remota das preferências, mantendo o app funcional sem sessão.

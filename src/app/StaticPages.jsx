@@ -1,9 +1,7 @@
-import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 import { usePreferences } from '../hooks/usePreferences.js'
-import { isSupabaseConfigured, signInWithSocial } from '../services/supabase.js'
 import { PageHeading } from './PageHeading.jsx'
 
 function RoutePage({ title, documentTitle, children }) {
@@ -12,6 +10,15 @@ function RoutePage({ title, documentTitle, children }) {
       <PageHeading documentTitle={documentTitle}>{title}</PageHeading>
       {children}
     </section>
+  )
+}
+
+function ContinueWithoutLogin() {
+  return (
+    <Link className="app-route__action app-route__action--icon" to="/">
+      Continuar sem login
+      <ArrowRight aria-hidden="true" size={16} />
+    </Link>
   )
 }
 
@@ -42,53 +49,12 @@ export function FavoritesPage() {
 }
 
 export function AccountPage() {
-  const { session, loading, error: sessionError, signOut } = useAuth()
-  const [actionError, setActionError] = useState('')
-
-  const handleSignIn = async () => {
-    const { error: signInError } = await signInWithSocial('google')
-    setActionError(signInError?.message ?? '')
-  }
-
-  const handleSignOut = async () => {
-    const result = await signOut()
-    setActionError(result?.error?.message ?? '')
-  }
-
   return (
     <RoutePage title="Conta" documentTitle="Conta — Clima Agora">
-      {!isSupabaseConfigured() ? (
-        <p className="app-route__empty">A autenticação ainda não está configurada.</p>
-      ) : session?.user ? (
-        <div className="app-route__content">
-          <p>Sessão iniciada como {session.user.email || 'usuário autenticado'}.</p>
-          <button
-            className="app-route__action"
-            type="button"
-            onClick={handleSignOut}
-            disabled={loading}
-          >
-            Sair
-          </button>
-        </div>
-      ) : (
-        <div className="app-route__content">
-          <p>Entre para sincronizar seus dados entre dispositivos.</p>
-          <button
-            className="app-route__action"
-            type="button"
-            onClick={handleSignIn}
-            disabled={loading}
-          >
-            Entrar com Google
-          </button>
-        </div>
-      )}
-      {(sessionError || actionError) && (
-        <p className="app-route__error" role="alert">
-          {actionError || sessionError}
-        </p>
-      )}
+      <div className="app-route__content">
+        <p>O app está no modo local. Seus dados permanecem salvos neste dispositivo.</p>
+        <ContinueWithoutLogin />
+      </div>
     </RoutePage>
   )
 }

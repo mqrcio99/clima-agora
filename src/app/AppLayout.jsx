@@ -44,11 +44,13 @@ function getInitialDevice() {
 
 export function AppLayout() {
   const location = useLocation()
-  const [city, setCity] = useState(() => getStoredCity())
-  const [cityInput, setCityInput] = useState(city)
+  const [fallbackCity] = useState(() => getStoredCity())
+  const [city, setCity] = useState('')
+  const [cityInput, setCityInput] = useState(fallbackCity)
+  const [cityInputEdited, setCityInputEdited] = useState(false)
   const [device, setDevice] = useState(getInitialDevice)
   const [debugCondition] = useState(getDebugCondition)
-  const { data, loading, error, locationDenied } = useWeather({ city })
+  const { data, loading, error, locationDenied } = useWeather({ city, fallbackCity })
   const { preferences } = usePreferences()
   const summary = getWeatherSummary(data)
 
@@ -66,6 +68,12 @@ export function AppLayout() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  useEffect(() => {
+    if (!city && data?.city) {
+      setStoredCity(data.city)
+    }
+  }, [city, data?.city])
+
   const weatherCondition =
     debugCondition && DEBUG_CONDITIONS.includes(debugCondition)
       ? debugCondition
@@ -78,12 +86,14 @@ export function AppLayout() {
         : 'clear'
   const theme = preferences.theme === 'auto' ? weatherCondition : preferences.theme
   const displayedCity = city && loading ? city : data?.city || city || 'Local padrão'
+  const displayedCityInput = cityInputEdited ? cityInput : city || data?.city || cityInput
   const showPlayground =
     import.meta.env.DEV && new URLSearchParams(window.location.search).has('playground')
   const handleSearch = nextCity => {
     const normalized = nextCity.trim()
     setCity(normalized)
     setCityInput(normalized)
+    setCityInputEdited(true)
     setStoredCity(normalized)
   }
 
@@ -105,8 +115,11 @@ export function AppLayout() {
             error={Boolean(error)}
             city={displayedCity}
             locationDenied={locationDenied}
-            cityInput={cityInput}
-            onCityChange={setCityInput}
+            cityInput={displayedCityInput}
+            onCityChange={value => {
+              setCityInput(value)
+              setCityInputEdited(true)
+            }}
             onSearch={handleSearch}
             showBrand={false}
           />

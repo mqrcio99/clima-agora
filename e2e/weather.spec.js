@@ -50,6 +50,16 @@ async function openWeatherApp(page, forecastOptions, clockTime, condition = 'cle
     key: CITY_KEY,
     city: 'São Paulo',
   })
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition(_success, error) {
+          error({ code: 1, PERMISSION_DENIED: 1 })
+        },
+      },
+    })
+  })
   await page.route('https://geocoding-api.open-meteo.com/**', route =>
     route.fulfill({
       json: { results: [{ latitude: -23.55, longitude: -46.63, name: 'São Paulo' }] },
@@ -64,6 +74,49 @@ async function openWeatherApp(page, forecastOptions, clockTime, condition = 'cle
   await page.goto(`/?debug=${condition}`)
   await expect(page.getByRole('heading', { name: 'São Paulo' })).toBeVisible()
 }
+
+test('atualiza a localização a cada recarga mesmo com uma cidade salva', async ({ page }) => {
+  await page.addInitScript(({ key }) => {
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, 'Cidade salva')
+    }
+    const pageLoadCount = Number(sessionStorage.getItem('geolocation-page-load-count') || 0)
+    sessionStorage.setItem('geolocation-page-load-count', String(pageLoadCount + 1))
+
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition(success) {
+          const requestCount = Number(localStorage.getItem('geolocation-request-count') || 0)
+          localStorage.setItem('geolocation-request-count', String(requestCount + 1))
+          const latitude = pageLoadCount === 0 ? 10 : -20
+          success({ coords: { latitude, longitude: 30 } })
+        },
+      },
+    })
+  }, { key: CITY_KEY })
+  await page.route('https://api.bigdatacloud.net/data/reverse-geocode-client**', route => {
+    const latitude = Number(new URL(route.request().url()).searchParams.get('latitude'))
+    return route.fulfill({ json: { locality: latitude > 0 ? 'Localização inicial' : 'Localização atualizada' } })
+  })
+  await page.route('https://api.open-meteo.com/v1/forecast**', route =>
+    route.fulfill({ json: createForecast() }),
+  )
+
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Localização inicial' })).toBeVisible()
+  const firstLoadRequests = Number(
+    await page.evaluate(() => localStorage.getItem('geolocation-request-count')),
+  )
+  expect(firstLoadRequests).toBeGreaterThan(0)
+
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Localização atualizada' })).toBeVisible()
+  await expect(page.locator('.busca-cidade input')).toHaveValue('Localização atualizada')
+  expect(
+    Number(await page.evaluate(() => localStorage.getItem('geolocation-request-count'))),
+  ).toBeGreaterThan(firstLoadRequests)
+})
 
 test('mostra hoje e os próximos 15 dias', async ({ page }) => {
   await openWeatherApp(page)

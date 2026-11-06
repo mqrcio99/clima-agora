@@ -5,7 +5,7 @@ import { getWeatherCondition } from '../utils/weatherCondition.js'
 
 const REFRESH_INTERVAL = 10 * 60 * 1000
 
-export function useWeather({ city: requestedCity = '' } = {}) {
+export function useWeather({ city: requestedCity = '', fallbackCity = '' } = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -57,6 +57,36 @@ export function useWeather({ city: requestedCity = '' } = {}) {
     const activeRequestId = ++requestId.current
     const isCurrent = () => !cancelled && requestId.current === activeRequestId
 
+    const loadFallbackCity = async (permissionDenied = false) => {
+      const savedCity = fallbackCity.trim()
+
+      if (!savedCity) {
+        return false
+      }
+
+      try {
+        const place = await searchCoordinates(savedCity)
+        if (isCurrent()) {
+          await loadWeather(place.latitude, place.longitude, place.city, isCurrent)
+          if (permissionDenied && isCurrent()) {
+            setLocationDenied(true)
+          }
+        }
+      } catch (requestError) {
+        if (isCurrent()) {
+          setLoading(false)
+          setLocationDenied(permissionDenied)
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Não foi possível carregar a última cidade salva',
+          )
+        }
+      }
+
+      return true
+    }
+
     const start = async () => {
       setLoading(true)
       setError('')
@@ -72,9 +102,13 @@ export function useWeather({ city: requestedCity = '' } = {}) {
         }
 
         if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-          throw new Error(
-            'A geolocalização não é compatível com este navegador. Pesquise uma cidade para continuar.',
-          )
+          const usedFallback = await loadFallbackCity()
+          if (!usedFallback) {
+            throw new Error(
+              'A geolocalização não é compatível com este navegador. Pesquise uma cidade para continuar.',
+            )
+          }
+          return
         }
 
         try {
@@ -89,15 +123,20 @@ export function useWeather({ city: requestedCity = '' } = {}) {
                 )
               }
             },
-            permissionError => {
+            async permissionError => {
               if (isCurrent()) {
-                setLoading(false)
-                setLocationDenied(permissionError.code === permissionError.PERMISSION_DENIED)
-                setError(
-                  permissionError.code === permissionError.PERMISSION_DENIED
-                    ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
-                    : 'Não foi possível localizar o dispositivo. Pesquise uma cidade.',
-                )
+                const denied = permissionError.code === permissionError.PERMISSION_DENIED
+                const usedFallback = await loadFallbackCity(denied)
+
+                if (!usedFallback && isCurrent()) {
+                  setLoading(false)
+                  setLocationDenied(denied)
+                  setError(
+                    denied
+                      ? 'Permissão de localização negada. Pesquise uma cidade para continuar.'
+                      : 'Não foi possível localizar o dispositivo. Pesquise uma cidade.',
+                  )
+                }
               }
             },
             { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
@@ -139,7 +178,7 @@ export function useWeather({ city: requestedCity = '' } = {}) {
       cancelled = true
       window.clearInterval(timer)
     }
-  }, [requestedCity, loadWeather])
+  }, [requestedCity, fallbackCity, loadWeather])
 
   return { data, loading, error, condition, locationDenied }
 }

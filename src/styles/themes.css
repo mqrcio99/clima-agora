@@ -450,6 +450,12 @@ button {
   text-decoration: none;
 }
 
+.app-route__action--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .app-route__error {
   margin: 0;
   color: #b42318;
