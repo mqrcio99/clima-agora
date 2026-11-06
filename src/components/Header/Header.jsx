@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { MapPin, Menu, X } from 'lucide-react'
 import { CitySearch } from '../CitySearch/CitySearch.jsx'
 
 function getSummaryText(item, summary) {
@@ -133,7 +134,11 @@ export function Header({
         ref={menuButtonRef}
         onClick={() => setMenuOpen(open => !open)}
       >
-        <span aria-hidden="true">{menuOpen ? '×' : '☰'}</span>
+        {menuOpen ? (
+          <X aria-hidden="true" size={20} strokeWidth={2} />
+        ) : (
+          <Menu aria-hidden="true" size={20} strokeWidth={2} />
+        )}
       </button>
 
       <div className="cabecalho__navegacao-grupo">
@@ -178,9 +183,7 @@ export function Header({
         </nav>
         <div className="cabecalho__localizacao" aria-live="polite">
           <span className="cabecalho__localizacao-icone" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M12 22s8-7.2 8-13a8 8 0 1 0-16 0c0 5.8 8 13 8 13Zm0-10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
-            </svg>
+            <MapPin aria-hidden="true" size={16} strokeWidth={2} />
           </span>
           <span className="cabecalho__localizacao-nome">{city}</span>
           <button

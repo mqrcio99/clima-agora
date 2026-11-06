@@ -46,13 +46,19 @@ export function Forecast({
     <section className="previsao" id={id} aria-label={title}>
       {showHourly && hourly.length > 0 && (
         <>
-          <div className="previsao__cabecalho">
+          <div className="previsao__cabecalho previsao__cabecalho--horas">
             <h2>Próximas horas</h2>
             <span>{rainRisk}</span>
           </div>
-          <div className="previsao__lista" aria-label="Previsão das próximas horas">
-            {hourly.map(item => (
-              <article className="cartao-dia" key={item.time}>
+          <div
+            className="previsao__lista previsao__lista--horas"
+            aria-label="Previsão das próximas horas"
+          >
+            {hourly.map((item, index) => (
+              <article
+                className={`cartao-dia cartao-dia--hora${index === 0 ? ' cartao-dia--agora' : ''}`}
+                key={item.time}
+              >
                 <span>{item.label}</span>
                 <strong>{ICONS[item.condition] || '☁️'}</strong>
                 <small className="cartao-dia__label">
@@ -68,7 +74,7 @@ export function Forecast({
         </>
       )}
 
-      <div className="previsao__cabecalho">
+      <div className="previsao__cabecalho previsao__cabecalho--dias">
         <h2>{title}</h2>
         <span>
           {daysToShow === 1
@@ -78,7 +84,7 @@ export function Forecast({
               : 'Previsão diária'}
         </span>
       </div>
-      <div className="previsao__lista">
+      <div className="previsao__lista previsao__lista--dias">
         {days.time.slice(startIndex, startIndex + daysToShow).map((date, offset) => {
           const index = startIndex + offset
           const day = new Date(`${date}T12:00:00`)
@@ -101,7 +107,10 @@ export function Forecast({
           })
 
           return (
-            <article className="cartao-dia" key={date}>
+            <article
+              className={`cartao-dia cartao-dia--dia${index === 0 ? ' cartao-dia--hoje' : ''}`}
+              key={date}
+            >
               <span>{label}</span>
               <strong>{ICONS[condition]}</strong>
               <small className="cartao-dia__label">{CONDITION_LABELS[condition]}</small>

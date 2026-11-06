@@ -10,6 +10,15 @@ test('navega entre configurações e favoritos por rotas', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Favoritos' })).toBeVisible()
 })
 
+test('permite continuar sem login a partir da tela Conta', async ({ page }) => {
+  await page.goto('/conta')
+
+  await page.getByRole('link', { name: 'Continuar sem login' }).click()
+
+  await expect(page).toHaveURL('/')
+  await expect(page.getByRole('heading', { name: 'Clima', exact: true })).toBeVisible()
+})
+
 test('mantém o fundo montado ao trocar de rota', async ({ page }) => {
   await page.goto('/configuracoes')
 
